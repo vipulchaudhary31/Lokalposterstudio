@@ -1,7 +1,9 @@
 // Local placeholders (figma:asset imports replaced for running outside Figma)
-const image_c92d52e8598ae346d604fac2120bd87eab98c2a9 = '/placeholder-logo.png';
-const samplePhotoBg = '/placeholder-sample-bg.png';
-const samplePhotoNoBg = '/placeholder-sample-nobg.png';
+// Use BASE_URL so assets work on GitHub Pages (e.g. /Lokalposterstudio/)
+const baseUrl = import.meta.env.BASE_URL;
+const image_c92d52e8598ae346d604fac2120bd87eab98c2a9 = `${baseUrl}placeholder-logo.png`;
+const samplePhotoBg = `${baseUrl}placeholder-sample-bg.png`;
+const samplePhotoNoBg = `${baseUrl}placeholder-sample-nobg.png`;
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import { ImageUploader } from '@/app/components/ImageUploader';

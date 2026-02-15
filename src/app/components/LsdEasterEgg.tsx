@@ -1,5 +1,5 @@
 // Local placeholder (figma:asset import replaced for running outside Figma)
-const image_c54dfe46038c59054ed3c72dcf43d44ef653d78a = '/placeholder-easter.png';
+const image_c54dfe46038c59054ed3c72dcf43d44ef653d78a = `${import.meta.env.BASE_URL}placeholder-easter.png`;
 import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import svgPaths from '../../imports/svg-4yinqhoadk';
