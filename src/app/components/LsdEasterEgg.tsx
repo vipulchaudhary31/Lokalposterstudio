@@ -4,80 +4,114 @@ import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import svgPaths from '../../imports/svg-4yinqhoadk';
 
-const EASE_OUT_EXPO = [0.16, 1, 0.3, 1] as const;
-const EASE_IN_EXPO = [0.7, 0, 0.84, 0] as const;
+/* ── Smooth spring-like cubic beziers ── */
+const EASE_OUT_QUART = [0.25, 1, 0.5, 1] as const;
+const EASE_IN_QUART = [0.5, 0, 0.75, 0] as const;
+const EASE_OUT_CUBIC = [0.33, 1, 0.68, 1] as const;
 
-/* ── Exit animation variants ── */
+/* ── Wrapper: gentle fade in, graceful fade out ── */
 const wrapperVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.5, ease: 'easeOut' } },
-  exit: { opacity: 0, transition: { duration: 1.2, ease: [0.4, 0, 0.2, 1] } },
+  visible: {
+    opacity: 1,
+    transition: { duration: 0.6, ease: EASE_OUT_CUBIC },
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 0.9, ease: EASE_OUT_CUBIC, when: 'afterChildren',
+      staggerChildren: 0.04, staggerDirection: -1 },
+  },
 };
 
+/* ── Backdrop: smooth blur + darken build-up, clean reverse ── */
 const backdropVariants = {
   hidden: { backdropFilter: 'blur(0px)', backgroundColor: 'rgba(0,0,0,0)' },
   visible: {
-    backdropFilter: 'blur(24px)',
-    backgroundColor: 'rgba(0,0,0,0.92)',
+    backdropFilter: 'blur(28px)',
+    backgroundColor: 'rgba(0,0,0,0.88)',
     transition: {
-      backdropFilter: { duration: 0.6, ease: 'easeOut' },
-      backgroundColor: { duration: 1.2, ease: EASE_OUT_EXPO },
+      backdropFilter: { duration: 0.9, ease: EASE_OUT_QUART },
+      backgroundColor: { duration: 1.0, ease: EASE_OUT_QUART },
     },
   },
   exit: {
     backdropFilter: 'blur(0px)',
     backgroundColor: 'rgba(0,0,0,0)',
     transition: {
-      backgroundColor: { duration: 0.8, ease: [0.4, 0, 0.6, 1] },
-      backdropFilter: { duration: 1.0, ease: [0.4, 0, 0.2, 1] },
+      backdropFilter: { duration: 0.7, ease: EASE_OUT_CUBIC },
+      backgroundColor: { duration: 0.6, ease: EASE_OUT_CUBIC },
     },
   },
 };
 
+/* ── Aurora: slow breathe in, gentle fade out ── */
 const auroraVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 1.4, delay: 0.5, ease: 'easeOut' } },
-  exit: { opacity: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+  visible: { opacity: 1, transition: { duration: 1.8, delay: 0.3, ease: EASE_OUT_CUBIC } },
+  exit: { opacity: 0, transition: { duration: 0.6, ease: EASE_OUT_CUBIC } },
 };
 
+/* ── "Crafted by" label: soft float up ── */
 const craftedByVariants = {
-  hidden: { opacity: 0, y: 14 },
-  visible: { opacity: 1, y: 0, transition: { delay: 0.4, duration: 0.7, ease: EASE_OUT_EXPO } },
-  exit: { opacity: 0, y: -10, transition: { duration: 0.35, ease: EASE_IN_EXPO } },
+  hidden: { opacity: 0, y: 18, filter: 'blur(6px)' },
+  visible: {
+    opacity: 1, y: 0, filter: 'blur(0px)',
+    transition: { delay: 0.35, duration: 0.9, ease: EASE_OUT_QUART },
+  },
+  exit: {
+    opacity: 0, y: -8, filter: 'blur(4px)',
+    transition: { duration: 0.4, ease: EASE_IN_QUART },
+  },
 };
 
+/* ── Logo: scale + blur reveal, feels like coming into focus ── */
 const logoVariants = {
-  hidden: { opacity: 0, scale: 0.85, filter: 'blur(16px)' },
+  hidden: { opacity: 0, scale: 0.92, filter: 'blur(20px)' },
   visible: {
     opacity: 1,
     scale: 1,
     filter: 'blur(0px)',
-    transition: { delay: 0.55, duration: 0.8, ease: EASE_OUT_EXPO },
+    transition: { delay: 0.5, duration: 1.0, ease: EASE_OUT_QUART },
   },
   exit: {
     opacity: 0,
-    scale: 0.88,
-    filter: 'blur(20px)',
-    transition: { duration: 0.7, ease: [0.5, 0, 0.75, 0] },
+    scale: 0.95,
+    filter: 'blur(12px)',
+    transition: { duration: 0.5, ease: EASE_IN_QUART },
   },
 };
 
+/* ── Tagline: gentle float up with blur ── */
 const taglineVariants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0, transition: { delay: 0.85, duration: 0.7, ease: EASE_OUT_EXPO } },
-  exit: { opacity: 0, y: 5, filter: 'blur(4px)', transition: { duration: 0.3, ease: EASE_IN_EXPO } },
+  hidden: { opacity: 0, y: 12, filter: 'blur(6px)' },
+  visible: {
+    opacity: 1, y: 0, filter: 'blur(0px)',
+    transition: { delay: 0.8, duration: 0.9, ease: EASE_OUT_QUART },
+  },
+  exit: {
+    opacity: 0, y: 6, filter: 'blur(4px)',
+    transition: { duration: 0.35, ease: EASE_IN_QUART },
+  },
 };
 
+/* ── "Learn more" link: follows tagline ── */
 const linkVariants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0, transition: { delay: 1.05, duration: 0.7, ease: EASE_OUT_EXPO } },
-  exit: { opacity: 0, y: 5, filter: 'blur(4px)', transition: { duration: 0.25, ease: EASE_IN_EXPO } },
+  hidden: { opacity: 0, y: 12, filter: 'blur(6px)' },
+  visible: {
+    opacity: 1, y: 0, filter: 'blur(0px)',
+    transition: { delay: 1.0, duration: 0.9, ease: EASE_OUT_QUART },
+  },
+  exit: {
+    opacity: 0, y: 6, filter: 'blur(4px)',
+    transition: { duration: 0.3, ease: EASE_IN_QUART },
+  },
 };
 
+/* ── Dismiss hint: fade in late, fade out fast ── */
 const dismissVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { delay: 1.8, duration: 1.2 } },
-  exit: { opacity: 0, transition: { duration: 0.15 } },
+  visible: { opacity: 1, transition: { delay: 2.0, duration: 1.4, ease: EASE_OUT_CUBIC } },
+  exit: { opacity: 0, transition: { duration: 0.2, ease: EASE_OUT_CUBIC } },
 };
 
 /* ── The horizontal LSD logo (gradient blob shapes) ── */
@@ -134,7 +168,7 @@ function LsdLogo({ className }: { className?: string }) {
 function AuroraBackdrop() {
   return (
     <div className="absolute inset-0 overflow-hidden">
-      {/* Aurora sweep 1 — magenta arc */}
+      {/* Aurora sweep 1 — magenta arc, slow and smooth */}
       <motion.div
         className="absolute"
         style={{
@@ -143,12 +177,12 @@ function AuroraBackdrop() {
           left: '-20%',
           top: '-20%',
           background:
-            'conic-gradient(from 0deg at 50% 50%, transparent 0deg, #DE04F1 50deg, transparent 110deg, transparent 360deg)',
-          opacity: 0.12,
-          filter: 'blur(90px)',
+            'conic-gradient(from 0deg at 50% 50%, transparent 0deg, #DE04F1 60deg, transparent 130deg, transparent 360deg)',
+          opacity: 0.10,
+          filter: 'blur(100px)',
         }}
         animate={{ rotate: 360 }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
       />
       {/* Aurora sweep 2 — amber arc, counter-rotating */}
       <motion.div
@@ -159,14 +193,14 @@ function AuroraBackdrop() {
           left: '-20%',
           top: '-20%',
           background:
-            'conic-gradient(from 200deg at 50% 50%, transparent 0deg, #FDA900 50deg, transparent 110deg, transparent 360deg)',
-          opacity: 0.1,
-          filter: 'blur(90px)',
+            'conic-gradient(from 200deg at 50% 50%, transparent 0deg, #FDA900 60deg, transparent 130deg, transparent 360deg)',
+          opacity: 0.08,
+          filter: 'blur(100px)',
         }}
         animate={{ rotate: -360 }}
-        transition={{ duration: 26, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 34, repeat: Infinity, ease: 'linear' }}
       />
-      {/* Aurora sweep 3 — orange accent, slower */}
+      {/* Aurora sweep 3 — orange accent, slowest */}
       <motion.div
         className="absolute"
         style={{
@@ -175,30 +209,30 @@ function AuroraBackdrop() {
           left: '-10%',
           top: '-10%',
           background:
-            'conic-gradient(from 100deg at 45% 55%, transparent 0deg, #F84F29 35deg, transparent 75deg, transparent 360deg)',
-          opacity: 0.07,
-          filter: 'blur(100px)',
+            'conic-gradient(from 100deg at 45% 55%, transparent 0deg, #F84F29 40deg, transparent 90deg, transparent 360deg)',
+          opacity: 0.06,
+          filter: 'blur(110px)',
         }}
         animate={{ rotate: 360 }}
-        transition={{ duration: 32, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
       />
 
-      {/* Centered bloom — soft glow behind logo */}
+      {/* Centered bloom — soft breathing glow behind logo */}
       <motion.div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
         style={{
-          width: 600,
-          height: 350,
+          width: 650,
+          height: 380,
           background:
-            'radial-gradient(ellipse at center, rgba(248,79,41,0.18) 0%, rgba(222,4,241,0.06) 45%, transparent 72%)',
-          filter: 'blur(40px)',
+            'radial-gradient(ellipse at center, rgba(248,79,41,0.15) 0%, rgba(222,4,241,0.05) 45%, transparent 72%)',
+          filter: 'blur(50px)',
         }}
-        initial={{ opacity: 0, scale: 0.6 }}
+        initial={{ opacity: 0, scale: 0.7 }}
         animate={{
-          opacity: [0.5, 0.85, 0.5],
-          scale: [0.97, 1.04, 0.97],
+          opacity: [0.4, 0.7, 0.4],
+          scale: [0.98, 1.03, 0.98],
         }}
-        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
       />
 
       {/* Vignette — cinematic dark frame */}
@@ -281,15 +315,20 @@ export function LsdEasterEgg({ open, onClose }: LsdEasterEggProps) {
           </motion.div>
 
           {/* Center content */}
-          <div className="relative z-10 flex flex-col items-center gap-8 px-8">
+          <div className="relative z-10 flex flex-col items-center gap-6 px-8">
             {/* "Crafted by" label */}
             <motion.div
-              className="flex items-center gap-3"
+              className="flex items-center gap-4"
               variants={craftedByVariants}
             >
-              <div className="h-px w-8 bg-gradient-to-r from-transparent to-white/30" />
+              <motion.div
+                className="h-px w-10 bg-gradient-to-r from-transparent to-white/25"
+                initial={{ scaleX: 0, originX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 0.5, duration: 0.8, ease: EASE_OUT_QUART }}
+              />
               <span
-                className="text-white/50 tracking-[0.05em]"
+                className="text-white/45 tracking-[0.08em]"
                 style={{
                   fontFamily: "'Cormorant Garamond', serif",
                   fontStyle: 'italic',
@@ -299,7 +338,12 @@ export function LsdEasterEgg({ open, onClose }: LsdEasterEggProps) {
               >
                 crafted by
               </span>
-              <div className="h-px w-8 bg-gradient-to-l from-transparent to-white/30" />
+              <motion.div
+                className="h-px w-10 bg-gradient-to-l from-transparent to-white/25"
+                initial={{ scaleX: 0, originX: 1 }}
+                animate={{ scaleX: 1 }}
+                transition={{ delay: 0.5, duration: 0.8, ease: EASE_OUT_QUART }}
+              />
             </motion.div>
 
             {/* Logo */}
@@ -372,7 +416,7 @@ export function LsdCredit({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center justify-center gap-2.5 py-2.5 group cursor-pointer border-t border-border"
+      className="w-full flex items-center justify-center gap-2.5 py-2.5 group cursor-pointer border-t border-border transition-all duration-300 hover:bg-muted/30"
       title="About Lokal School of Design"
     >
       {/* "crafted by" label */}
@@ -397,7 +441,7 @@ export function LsdCredit({ onClick }: { onClick: () => void }) {
         <img
           src={image_c54dfe46038c59054ed3c72dcf43d44ef653d78a}
           alt="LSD"
-          className="w-4 h-4 shrink-0 rounded-[2px] m-[0px]"
+          className="w-4 h-4 shrink-0 rounded-[2px] m-[0px] relative top-[1px]"
         />
         <span className="relative px-[0px] pt-[0px] pb-[2px]">
           <span
