@@ -322,19 +322,6 @@ export default function App() {
     const safeStroke = { ...textStyle.textStroke, color: safeStrokeColor };
 
     const payload = {
-      _units: {
-        positions: 'percentage 0-100 (x: relative to canvas width, y: relative to canvas height)',
-        diameter: 'percentage 0-100 (relative to canvas width)',
-        width: 'percentage 0-100 (relative to canvas width)',
-        height: 'percentage 0-100 (relative to canvas height)',
-        fontSize: 'px (absolute, use directly in RN)',
-        fontWeight: 'numeric (300-900)',
-        letterSpacing: 'px (absolute, use directly in RN)',
-        strokeWidth: 'px (absolute, use directly in RN)',
-        cornerRadius: 'px (absolute, use directly in RN)',
-        colors: 'hex #RRGGBB',
-        opacity: 'percentage 0-100',
-      },
       aspectRatio: aspectRatioString,
       isProfileTemplate,
       tags: selectedTags,
