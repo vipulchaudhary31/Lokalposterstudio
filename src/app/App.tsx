@@ -1,6 +1,7 @@
-import image_c92d52e8598ae346d604fac2120bd87eab98c2a9 from 'figma:asset/c92d52e8598ae346d604fac2120bd87eab98c2a9.png'
-import samplePhotoBg from 'figma:asset/185344b61c2cb5a0bc2331cfa80ae1ae5b4cf167.png'
-import samplePhotoNoBg from 'figma:asset/81fbfa2e81eca0f5a5f2df9607389acdfe9ba813.png'
+// Local placeholders (figma:asset imports replaced for running outside Figma)
+const image_c92d52e8598ae346d604fac2120bd87eab98c2a9 = '/placeholder-logo.png';
+const samplePhotoBg = '/placeholder-sample-bg.png';
+const samplePhotoNoBg = '/placeholder-sample-nobg.png';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { flushSync } from 'react-dom';
 import { ImageUploader } from '@/app/components/ImageUploader';

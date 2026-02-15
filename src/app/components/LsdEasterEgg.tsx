@@ -1,4 +1,5 @@
-import image_c54dfe46038c59054ed3c72dcf43d44ef653d78a from 'figma:asset/c54dfe46038c59054ed3c72dcf43d44ef653d78a.png'
+// Local placeholder (figma:asset import replaced for running outside Figma)
+const image_c54dfe46038c59054ed3c72dcf43d44ef653d78a = '/placeholder-easter.png';
 import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import svgPaths from '../../imports/svg-4yinqhoadk';
@@ -293,7 +294,6 @@ export function LsdEasterEgg({ open, onClose }: LsdEasterEggProps) {
                   fontFamily: "'Cormorant Garamond', serif",
                   fontStyle: 'italic',
                   fontWeight: 400,
-                  fontVariant: 'small-caps',
                   fontSize: '13px',
                 }}
               >
@@ -337,7 +337,6 @@ export function LsdEasterEgg({ open, onClose }: LsdEasterEggProps) {
                 fontWeight: 300,
                 fontSize: '14px',
                 letterSpacing: '0.06em',
-                fontVariant: 'small-caps',
                 textDecoration: 'none',
                 borderBottom: '1px solid rgba(255,255,255,0.15)',
                 paddingBottom: '1px',
@@ -383,7 +382,6 @@ export function LsdCredit({ onClick }: { onClick: () => void }) {
           fontFamily: "'Cormorant Garamond', serif",
           fontStyle: 'italic',
           fontWeight: 400,
-          fontVariant: 'small-caps',
           fontSize: '11px',
           letterSpacing: '0.05em',
         }}
