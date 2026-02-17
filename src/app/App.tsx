@@ -21,6 +21,7 @@ import { Input } from '@/app/components/ui/input';
 import { Label } from '@/app/components/ui/label';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/app/components/ui/collapsible';
 import { LsdEasterEgg, LsdCredit } from '@/app/components/LsdEasterEgg';
+import type { CompactTemplateJSON } from '@/templateSchema';
 import {
   Upload, Tags, Download, User, Circle, Square,
   ChevronRight, ImageIcon, X, Palette, Sun, Moon,
@@ -346,45 +347,54 @@ export default function App() {
     const safeShadow = { ...textStyle.textShadow, color: safeShadowColor };
     const safeStroke = { ...textStyle.textStroke, color: safeStrokeColor };
 
-    const payload = {
-      aspectRatio: aspectRatioString,
-      isProfileTemplate,
-      primaryCategories: selectedTags,
-      languageTags: selectedLanguages,
-      backgroundImage,
-      mediaType,
-      imagePlaceholder: {
+    const payload: CompactTemplateJSON = {
+      ar: aspectRatioString,
+      t: isProfileTemplate,
+      pc: selectedTags,
+      lg: selectedLanguages,
+      bg: backgroundImage,
+      mt: mediaType,
+      ip: {
         x: Math.round((imageHolder.x / CANVAS_WIDTH) * 100),
         y: Math.round((imageHolder.y / canvasHeight) * 100),
-        diameter: Math.round((imageHolder.diameter / CANVAS_WIDTH) * 100),
-        shape: photoShape,
-        ...(photoShape === 'square' ? { cornerRadius: photoCornerRadius } : {}),
-        hasBackground: photoHasBackground,
-        strokeWidth: photoStrokeWidth,
-        strokeColor: safePhotoStrokeColor,
+        d: Math.round((imageHolder.diameter / CANVAS_WIDTH) * 100),
+        sh: photoShape,
+        ...(photoShape === 'square' ? { cr: photoCornerRadius } : {}),
+        hb: photoHasBackground,
+        sw: photoStrokeWidth,
+        sc: safePhotoStrokeColor,
       },
-      namePlaceholder: {
+      np: {
         y: Math.round((nameHolder.y / canvasHeight) * 100),
-        height: Math.round((nameHolder.height / canvasHeight) * 100),
-        styling: {
-          textStyle: {
-            color: safeTextColor,
-            fontSize: textStyle.fontSize,
-            fontWeight: textStyle.fontWeight,
-            letterSpacing: textStyle.letterSpacing,
-            textShadow: safeShadow,
-            textShadowCSS: textShadowToCSS(safeShadow),
-            textShadowRN: textShadowToRN(safeShadow),
-            textStroke: safeStroke,
-            textStrokeRNShadows: textStrokeToRNShadows(safeStroke),
-            combinedTextShadowCSS: buildCombinedTextShadow(safeShadow, safeStroke),
-            textAlignment: textStyle.textAlignment,
+        h: Math.round((nameHolder.height / canvasHeight) * 100),
+        st: {
+          ts: {
+            c: safeTextColor,
+            fs: textStyle.fontSize,
+            fw: textStyle.fontWeight,
+            ls: textStyle.letterSpacing,
+            sh: {
+              ox: safeShadow.offsetX,
+              oy: safeShadow.offsetY,
+              bl: safeShadow.blur,
+              col: safeShadow.color,
+              op: safeShadow.opacity,
+            },
+            shCss: textShadowToCSS(safeShadow),
+            shRn: textShadowToRN(safeShadow),
+            st: {
+              w: safeStroke.width,
+              col: safeStroke.color,
+            },
+            stRn: textStrokeToRNShadows(safeStroke),
+            shComboCss: buildCombinedTextShadow(safeShadow, safeStroke),
+            ta: textStyle.textAlignment,
           },
         },
       },
     };
 
-    console.log('Export Payload:', payload);
+    console.log('Export Payload (compact):', payload);
     const jsonString = JSON.stringify(payload, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
