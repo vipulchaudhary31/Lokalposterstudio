@@ -489,7 +489,7 @@ export function DraggablePlaceholder({
         >
           {/* Text Content */}
           <div
-            className="relative w-full h-full flex items-center"
+            className="relative w-full h-full flex items-center overflow-hidden"
             style={{
               padding: `0 ${scaledPad + 6}px`,
               justifyContent:
@@ -511,6 +511,8 @@ export function DraggablePlaceholder({
                 maxWidth: '100%',
                 whiteSpace: 'nowrap',
                 display: 'block',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
                 letterSpacing: `${letterSpacing * safeScale}px`,
                 WebkitFontSmoothing: 'antialiased' as any,
                 MozOsxFontSmoothing: 'grayscale' as any,

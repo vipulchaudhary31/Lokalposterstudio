@@ -17,6 +17,7 @@ export function ExportPanel({
   backgroundImage,
   imageHolder,
   nameHolder,
+  selectedTags,
   selectedLanguages,
   canvasWidth,
   canvasHeight,
@@ -24,6 +25,7 @@ export function ExportPanel({
 }: ExportPanelProps) {
   const checks = [
     { ok: !!backgroundImage, label: 'Background uploaded' },
+    { ok: selectedTags.length > 0, label: 'Primary category selected' },
     { ok: selectedLanguages.length > 0, label: 'Language selected' },
     {
       ok: imageHolder.x >= 0 && imageHolder.y >= 0 &&

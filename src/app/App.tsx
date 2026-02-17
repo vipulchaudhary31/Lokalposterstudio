@@ -45,7 +45,7 @@ const CANVAS_WIDTH = 1080;
 const ALLOWED_CANVAS_SIZES = [
   { height: 1152, label: '1080 x 1152' },
   { height: 1350, label: '1080 x 1350' },
-  { height: 1374, label: '1080 x 1374' },
+  { height: 1484, label: '1080 x 1484' },
   { height: 1620, label: '1080 x 1620' },
 ];
 
@@ -67,17 +67,25 @@ function computeAspectRatioString(width: number, height: number): string {
   return `${sw}:${sh}`;
 }
 
+// Tags list trimmed to the approved sheet:
+// - Sheet "Profile" → UI "Self"
+// - Sheet "Upload"  → UI "Wishes"
 const PROFILE_TAGS = [
-  'Alone','Attitude','Ayyappa','Bhakti','Breakup','Christmas','Diwali','Durga','Dussehra',
-  'Eid','Emotional','Family','Friendship','Ganesh','Ganesh Chaturthi','God Quotes',
-  'Good Afternoon','Good Morning','Good Night','Hanuman','Have a Nice Day','Holi',
-  'Independence Day','Krishna','Life Quotes','Local Pride','Love','Makar Sankranti',
-  'Miss You','Motivation','Navratri','New Year','Onam','Political','Pongal','Prayer',
-  'Proud Indian','Ram','Ram Navami','Republic Day','Sad','Sai Baba','Shayari','Shiva',
-  'Spiritual','Success','Ugadi'
+  'Health',
+  'Good Night',
+  'Devotional',
+  'Good Morning',
+  'Life',
+  'Sad',
+  'Love',
+  'Parents',
+  'Motivation',
+  'Money',
+  'Friendship',
+  'Personalities',
 ];
 
-const UPLOAD_TAGS = ['Anniversary','Birthday','Engagement','Wedding'];
+const UPLOAD_TAGS = ['Birthday', 'Anniversary'];
 
 const LANGUAGE_TAGS = [
   'Bengali','English','Gujarati','Hindi','Kannada','Malayalam','Marathi','Punjabi','Tamil','Telugu'
@@ -317,6 +325,15 @@ export default function App() {
   }, [aspectRatioString, canvasHeight]);
 
   const handleExport = () => {
+    if (selectedTags.length === 0) {
+      toast.error('Select at least 1 primary category.', { description: 'Pick a Self/Wishes tag before exporting.' });
+      return;
+    }
+    if (selectedLanguages.length === 0) {
+      toast.error('Select at least 1 language.', { description: 'Pick a language before exporting.' });
+      return;
+    }
+
     const safeTextColor = normalizeHex(textStyle.color, '#FFFFFF');
     const safeStrokeColor = normalizeHex(textStyle.textStroke.color, '#000000');
     const safeShadowColor = normalizeHex(textStyle.textShadow.color, '#000000');
@@ -327,7 +344,7 @@ export default function App() {
     const payload = {
       aspectRatio: aspectRatioString,
       isProfileTemplate,
-      tags: selectedTags,
+      primaryCategories: selectedTags,
       languageTags: selectedLanguages,
       backgroundImage,
       mediaType,
@@ -379,7 +396,11 @@ export default function App() {
     toast.success('Template exported!', { description: 'JSON saved to your device.' });
   };
 
-  const currentStep = !backgroundImage ? 1 : selectedLanguages.length === 0 ? 2 : 3;
+  const currentStep = !backgroundImage
+    ? 1
+    : (selectedTags.length === 0 || selectedLanguages.length === 0)
+      ? 2
+      : 3;
 
   const steps = [
     { n: 1, label: 'Upload', icon: Upload },
@@ -487,6 +508,7 @@ export default function App() {
                   availableTags={availableTags}
                   selectedTags={selectedTags}
                   onTagsChange={setSelectedTags}
+                  required
                 />
 
                 <Separator />

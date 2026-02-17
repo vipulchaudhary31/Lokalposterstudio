@@ -459,7 +459,7 @@ export function DesignCanvas({
               left: nameHolder.x * scale, top: nameHolder.y * scale,
               width: nameHolder.width * scale, height: nameHolder.height * scale,
             }}>
-              <div className="relative w-full h-full flex items-center" style={{
+              <div className="relative w-full h-full flex items-center overflow-hidden" style={{
                 padding: `0 ${scaledPad + 6}px`,
                 justifyContent: textAlignment === 'left' ? 'flex-start' : textAlignment === 'right' ? 'flex-end' : 'center',
               }}>
@@ -468,6 +468,7 @@ export function DesignCanvas({
                   color: textColor, fontWeight, fontSize: fontSize * scale, lineHeight: 1.25,
                   textShadow: scaledCombinedShadow, textAlign: textAlignment,
                   maxWidth: '100%', whiteSpace: 'nowrap', display: 'block',
+                  overflow: 'hidden', textOverflow: 'ellipsis',
                   letterSpacing: `${letterSpacing * scale}px`,
                   WebkitFontSmoothing: 'antialiased' as any,
                   MozOsxFontSmoothing: 'grayscale' as any,
