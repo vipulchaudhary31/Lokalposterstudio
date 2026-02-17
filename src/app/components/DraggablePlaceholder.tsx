@@ -284,17 +284,17 @@ export function DraggablePlaceholder({
           }
         }
       } else {
-        // Rectangle (text) — move only
-        const rawX = ps.startX + dx;
+        // Rectangle (text) — Y-only move (X locked)
+        const lockedX = ps.startX;
         const rawY = ps.startY + dy;
-        const clamped = clampRectPos(rawX, rawY, ps.startWidth, ps.startHeight);
-        const movingRect = nameToRect(clamped.x, clamped.y, ps.startWidth, ps.startHeight);
+        const clamped = clampRectPos(lockedX, rawY, ps.startWidth, ps.startHeight);
+        const movingRect = nameToRect(lockedX, clamped.y, ps.startWidth, ps.startHeight);
         const snap = applySnap(movingRect);
-        const finalClamped = clampRectPos(snap.x, snap.y, ps.startWidth, ps.startHeight);
-        setLiveX(finalClamped.x);
+        const finalClamped = clampRectPos(lockedX, snap.y, ps.startWidth, ps.startHeight);
+        setLiveX(lockedX);
         setLiveY(finalClamped.y);
         onActiveGuides?.(snap.guides);
-        onDragRect?.(nameToRect(finalClamped.x, finalClamped.y, ps.startWidth, ps.startHeight));
+        onDragRect?.(nameToRect(lockedX, finalClamped.y, ps.startWidth, ps.startHeight));
       }
     },
     [type, safeScale, clampCirclePos, clampRectPos, clampDiameter, onResizeDiameter, applySnap, onActiveGuides, onDragRect, otherRects, canvasWidth, canvasHeight, minDiameter, maxDiameter],

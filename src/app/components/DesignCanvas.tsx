@@ -31,6 +31,8 @@ interface DesignCanvasProps {
   textStroke?: TextStroke;
   userPhoto?: string | null;
   samplePhoto?: string;
+  /** When false, preview attempts to show subject cutout (transparent background). */
+  photoHasBackground?: boolean;
   mediaType?: 'image' | 'video';
   textAlignment?: TextAlignment;
   letterSpacing?: number;
@@ -69,6 +71,7 @@ export function DesignCanvas({
   textStroke = { width: 0, color: '#000000' },
   userPhoto = null,
   samplePhoto,
+  photoHasBackground = true,
   mediaType = 'image',
   textAlignment = 'center',
   letterSpacing = 0,
@@ -155,7 +158,8 @@ export function DesignCanvas({
         onImageHolderChangeRef.current({ ...ih, x: newX, y: newY });
       } else {
         const nh = nameHolderRef.current;
-        const newX = Math.round(Math.max(0, Math.min(cw - nh.width, nh.x + dx)));
+        // Text layer is Y-only (X locked)
+        const newX = nh.x;
         const newY = Math.round(Math.max(0, Math.min(ch - nh.height, nh.y + dy)));
         onNameHolderChangeRef.current({ ...nh, x: newX, y: newY });
       }
@@ -166,6 +170,93 @@ export function DesignCanvas({
   }, []); // Stable — reads from refs
 
   const previewPhoto = userPhoto || samplePhoto;
+  const [previewPhotoProcessed, setPreviewPhotoProcessed] = useState<string | null>(null);
+
+  // ── Background removal (UI preview only) ─────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+
+    async function process() {
+      if (!previewPhoto) {
+        setPreviewPhotoProcessed(null);
+        return;
+      }
+
+      // If background is allowed, use as-is.
+      if (photoHasBackground) {
+        setPreviewPhotoProcessed(null);
+        return;
+      }
+
+      // If the image is already a PNG and likely has alpha, don't process it.
+      // (Data URLs like "data:image/png;..." are common for uploads in this app.)
+      if (previewPhoto.startsWith('data:image/png')) {
+        setPreviewPhotoProcessed(null);
+        return;
+      }
+
+      try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = previewPhoto;
+        await img.decode();
+
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) {
+          setPreviewPhotoProcessed(null);
+          return;
+        }
+        ctx.drawImage(img, 0, 0);
+
+        const { width, height } = canvas;
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const data = imageData.data;
+
+        // Use top-left pixel as background color reference (works for solid backgrounds like black).
+        const bgR = data[0];
+        const bgG = data[1];
+        const bgB = data[2];
+
+        // Tuning: distance threshold for removing background. Higher = removes more.
+        const hard = 34;   // fully transparent under this distance
+        const soft = 68;   // feather region up to this distance
+
+        for (let i = 0; i < data.length; i += 4) {
+          const r = data[i];
+          const g = data[i + 1];
+          const b = data[i + 2];
+          // Euclidean distance in RGB space
+          const dr = r - bgR;
+          const dg = g - bgG;
+          const db = b - bgB;
+          const dist = Math.sqrt(dr * dr + dg * dg + db * db);
+
+          if (dist <= hard) {
+            data[i + 3] = 0;
+          } else if (dist < soft) {
+            // Feather alpha from 0 → 255 across the soft range
+            const t = (dist - hard) / (soft - hard);
+            const a = Math.max(0, Math.min(255, Math.round(255 * t)));
+            data[i + 3] = Math.min(data[i + 3], a);
+          }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        const out = canvas.toDataURL('image/png');
+        if (!cancelled) setPreviewPhotoProcessed(out);
+      } catch {
+        if (!cancelled) setPreviewPhotoProcessed(null);
+      }
+    }
+
+    process();
+    return () => { cancelled = true; };
+  }, [previewPhoto, photoHasBackground]);
+
+  const previewPhotoToRender = previewPhotoProcessed || previewPhoto;
 
   const scaledCombinedShadow = buildCombinedTextShadow(
     { ...textShadow, offsetX: textShadow.offsetX * scale, offsetY: textShadow.offsetY * scale, blur: textShadow.blur * scale },
@@ -446,8 +537,8 @@ export function DesignCanvas({
                 borderStyle: photoStrokeWidth > 0 ? 'solid' : undefined,
                 boxSizing: 'border-box',
               }}>
-                {previewPhoto ? (
-                  <img src={previewPhoto} alt="User" className="w-full h-full object-cover" />
+                {previewPhotoToRender ? (
+                  <img src={previewPhotoToRender} alt="User" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-white/30 flex items-center justify-center">
                     <span className="text-white text-xs">Photo</span>

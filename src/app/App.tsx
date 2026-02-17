@@ -308,8 +308,10 @@ export default function App() {
   useEffect(() => {
     const newWidth = Math.round(CANVAS_WIDTH * (textStyle.maxWidthPercent / 100));
     setNameHolder(prev => ({
-      ...prev, width: newWidth,
-      x: Math.min(prev.x, CANVAS_WIDTH - newWidth),
+      ...prev,
+      width: newWidth,
+      // Keep text placeholder centered; X is not user-adjustable
+      x: Math.round((CANVAS_WIDTH - newWidth) / 2),
     }));
   }, [textStyle.maxWidthPercent]);
 
@@ -320,7 +322,10 @@ export default function App() {
     });
     setNameHolder(prev => {
       const maxY = canvasHeight - prev.height;
-      return prev.y > maxY ? { ...prev, y: Math.max(0, maxY) } : prev;
+      // Keep centered X even when aspect ratio changes
+      const centeredX = Math.round((CANVAS_WIDTH - prev.width) / 2);
+      const nextY = prev.y > maxY ? Math.max(0, maxY) : prev.y;
+      return (prev.x !== centeredX || prev.y !== nextY) ? { ...prev, x: centeredX, y: nextY } : prev;
     });
   }, [aspectRatioString, canvasHeight]);
 
@@ -359,9 +364,7 @@ export default function App() {
         strokeColor: safePhotoStrokeColor,
       },
       namePlaceholder: {
-        x: Math.round((nameHolder.x / CANVAS_WIDTH) * 100),
         y: Math.round((nameHolder.y / canvasHeight) * 100),
-        width: Math.round((nameHolder.width / CANVAS_WIDTH) * 100),
         height: Math.round((nameHolder.height / canvasHeight) * 100),
         styling: {
           textStyle: {
@@ -559,6 +562,7 @@ export default function App() {
             textStroke={textStyle.textStroke}
             userPhoto={userPhoto}
             samplePhoto={photoHasBackground ? samplePhotoBg : samplePhotoNoBg}
+            photoHasBackground={photoHasBackground}
             mediaType={mediaType}
             textAlignment={textStyle.textAlignment}
             letterSpacing={textStyle.letterSpacing}
