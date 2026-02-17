@@ -3,3 +3,10 @@ dist/
 Lokalposterstudio/
 docs-archive/
 patches/
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
