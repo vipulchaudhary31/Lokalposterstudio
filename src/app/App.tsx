@@ -571,7 +571,7 @@ export default function App() {
             textShadow={textStyle.textShadow}
             textStroke={textStyle.textStroke}
             userPhoto={userPhoto}
-            samplePhoto={samplePhotoNoBg}
+            samplePhoto={photoHasBackground ? samplePhotoBg : samplePhotoNoBg}
             photoHasBackground={photoHasBackground}
             mediaType={mediaType}
             textAlignment={textStyle.textAlignment}
