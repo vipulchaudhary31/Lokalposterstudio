@@ -35,7 +35,6 @@ Fields that **must be scaled**:
 - `np.st.ts.ls` — letter spacing
 - `np.st.ts.shRn.textShadowOffset` (width & height)
 - `np.st.ts.shRn.textShadowRadius`
-- every `textShadowOffset` inside `np.st.ts.stRn`
 - `ip.sw` — photo border width
 - `ip.cr` — photo corner radius (square only)
 
@@ -48,7 +47,6 @@ Fields that are **ready to use as-is** (no scaling):
 - `ip.sh`, `ip.hb`
 - `np.st.ts.c`, `np.st.ts.fw`, `np.st.ts.ta`
 - `np.st.ts.shRn` → `textShadowColor`
-- every `textShadowColor` inside `stRn`
 
 ---
 
@@ -208,7 +206,7 @@ All text styling lives under `np.st.ts`.
         "textShadowRadius": 8,
         "textShadowColor": "rgba(0,0,0,0.65)"
       },
-      "stRn": []
+      "st": { "w": 2, "col": "#000000" }
     }
   }
 }
@@ -222,7 +220,7 @@ All text styling lives under `np.st.ts`.
 | `ls`   | number (design px, can be 0)     | Letter spacing. **Scale before use.**                               |
 | `ta`   | `"left"` \| `"center"` \| `"right"` | Text alignment                                                  |
 | `shRn` | object \| `null`                 | Drop shadow. `null` = no shadow applied.                            |
-| `stRn` | array (may be empty `[]`)        | Text stroke as shadow layers. Empty = no stroke.                    |
+| `st`   | object                            | Compact stroke config (width & color).                              |
 
 ---
 
@@ -246,30 +244,9 @@ All text styling lives under `np.st.ts`.
 
 ---
 
-### `stRn` — Text stroke
+### `st` — Text stroke (compact)
 
-React Native has no native text stroke. Stroke is simulated by rendering
-one `<Text>` copy per shadow in the `stRn` array, all stacked behind the
-main text. Empty array = no stroke.
-
-Each item:
-
-```json
-{
-  "textShadowOffset": { "width": 2.0, "height": 0.0 },
-  "textShadowRadius": 0,
-  "textShadowColor": "#000000"
-}
-```
-
-| Field               | Type                                    | Description                                      |
-|---------------------|-----------------------------------------|--------------------------------------------------|
-| `textShadowOffset`  | `{ width: number, height: number }`     | Offset forming the stroke outline. **Scale.**    |
-| `textShadowRadius`  | number                                  | Always `0` for stroke. No scaling needed.        |
-| `textShadowColor`   | string (hex)                            | Stroke colour. Ready to use.                     |
-
-For strokes ≤ 3px: **24** shadow items (every 15° around the text).
-For strokes > 3px: **36** items total — 24 outer + 12 inner at ~60% radius.
+React Native has no native text stroke. The editor stores stroke as a\n+single width + colour pair and your RN renderer should expand this into\n+24/36 text-shadow layers using the algorithm below.\n+\n+```json\n+\"st\": { \"w\": 2, \"col\": \"#000000\" }\n+```\n+\n+| Field | Type   | Description                       |\n+|-------|--------|-----------------------------------|\n+| `w`   | number | Stroke width in design px.       |\n+| `col` | string | Stroke colour as hex (`\"#000\"`). |\n*** End Patch```}Eassistant to=functions.ApplyPatch虎机assistant to=functions.ApplyPatch_RGCTXassistant to=functions.ApplyPatchรีเมียร์assistant to=functions.ApplyPatch_SKIPPED_COMMENTARY JSON_ERROR_OCCURRED_DUPLICATE_KEYS_MULTI_TOOL_OUTPUT_EXTRA_CONTENT_OUTPUT_BOUNDARY JSON must not contain duplicate keys. Duplicate key found: recipient_name. in multi_tool_use.parallel -> tool_uses. The error is likely in the tool arguments. Please double check your arguments and try again. endoftext  
 
 ---
 
@@ -359,18 +336,15 @@ function PosterTemplate({ json, outputWidth, userName, userPhotoUri }) {
       }}>
 
         {/* Stroke layers — render BEFORE main text (behind) */}
-        {ts.stRn.map((s, i) => (
+        {generateStrokeShadows(ts.st, scale).map((s, i) => (
           <Text
             key={i}
             style={[
               baseTextStyle,
               StyleSheet.absoluteFill,
               {
-                textShadowOffset: {
-                  width:  s.textShadowOffset.width  * scale,
-                  height: s.textShadowOffset.height * scale,
-                },
-                textShadowRadius: 0,
+                textShadowOffset: s.textShadowOffset,
+                textShadowRadius: s.textShadowRadius,
                 textShadowColor: s.textShadowColor,
               },
             ]}
@@ -397,6 +371,41 @@ function PosterTemplate({ json, outputWidth, userName, userPhotoUri }) {
 function canvasHeightFromAr(ar) {
   const [, h] = ar.split(':').map(Number);
   return h;
+}
+
+// Helper: expand compact stroke (w,col) into 24/36 shadow layers
+function generateStrokeShadows(st, scale) {
+  if (!st || st.w <= 0) return [];
+  const w = st.w * scale;
+  const c = st.col;
+  const shadows = [];
+  const steps = 24;
+  for (let i = 0; i < steps; i++) {
+    const angle = (i / steps) * 2 * Math.PI;
+    shadows.push({
+      textShadowOffset: {
+        width: +(w * Math.cos(angle)).toFixed(2),
+        height: +(w * Math.sin(angle)).toFixed(2),
+      },
+      textShadowRadius: 0,
+      textShadowColor: c,
+    });
+  }
+  if (st.w > 3) {
+    const inner = w * 0.6;
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * 2 * Math.PI;
+      shadows.push({
+        textShadowOffset: {
+          width: +(inner * Math.cos(angle)).toFixed(2),
+          height: +(inner * Math.sin(angle)).toFixed(2),
+        },
+        textShadowRadius: 0,
+        textShadowColor: c,
+      });
+    }
+  }
+  return shadows;
 }
 ```
 
@@ -428,26 +437,22 @@ function canvasHeightFromAr(ar) {
       "ts": {
         "c": "#FFFFFF",
         "fs": 64,
-        "fw": 700,
-        "ls": 0,
-        "ta": "center",
-        "shRn": {
-          "textShadowOffset": { "width": 0, "height": 2 },
-          "textShadowRadius": 8,
-          "textShadowColor": "rgba(0,0,0,0.65)"
-        },
-        "stRn": [
-          { "textShadowOffset": { "width": 2.5,  "height": 0.0  }, "textShadowRadius": 0, "textShadowColor": "#000000" },
-          { "textShadowOffset": { "width": 2.29, "height": 1.08 }, "textShadowRadius": 0, "textShadowColor": "#000000" },
-          { "textShadowOffset": { "width": 1.77, "height": 1.77 }, "textShadowRadius": 0, "textShadowColor": "#000000" }
-        ]
+      "fw": 700,
+      "ls": 0,
+      "ta": "center",
+      "shRn": {
+        "textShadowOffset": { "width": 0, "height": 2 },
+        "textShadowRadius": 8,
+        "textShadowColor": "rgba(0,0,0,0.65)"
+      },
+      "st": { "w": 2, "col": "#000000" }
       }
     }
   }
 }
 ```
 
-> `stRn` normally contains 24 items (or 36 for thick strokes). Truncated here for readability.
+> Stroke expansion normally produces 24 items (or 36 for thick strokes) at render time. Truncated here for readability.
 
 ---
 

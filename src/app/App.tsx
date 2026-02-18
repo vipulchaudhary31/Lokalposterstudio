@@ -374,7 +374,10 @@ export default function App() {
             fw: textStyle.fontWeight,
             ls: textStyle.letterSpacing,
             shRn: textShadowToRN(safeShadow),
-            stRn: textStrokeToRNShadows(safeStroke),
+            st: {
+              w: safeStroke.width,
+              col: safeStroke.color,
+            },
             ta: textStyle.textAlignment,
           },
         },

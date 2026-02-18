@@ -63,18 +63,15 @@ export type CompactTemplateJSON = {
           textShadowColor: string; // rgba(r,g,b,a)
         } | null;
         /**
-         * React Native stroke simulation (Android).
-         * Empty array when stroke is disabled.
-         * Each item is a textShadow* object. Must be rendered as stacked
-         * <Text> layers (one per shadow) behind the main text layer.
-         * All offset px values are in design px (1080-wide canvas).
-         * Scale by (outputCanvasWidth / 1080) before applying.
+         * Compact stroke config.
+         * width in design px (1080-wide canvas) and colour as hex.
+         * RN renderer should generate the 24/36 shadow ring from these
+         * values using the algorithm described in TEMPLATE_JSON_SCHEMA.md.
          */
-        stRn: {
-          textShadowOffset: { width: number; height: number };
-          textShadowRadius: number;
-          textShadowColor: string; // hex
-        }[];
+        st: {
+          w: number;
+          col: string;
+        };
         /** textAlignment: "left" | "center" | "right" */
         ta: 'left' | 'center' | 'right';
       };
@@ -107,7 +104,7 @@ export const TEMPLATE_KEY_MAP = {
   np_st_ts_fw: 'namePlaceholder.styling.textStyle.fontWeight',
   np_st_ts_ls: 'namePlaceholder.styling.textStyle.letterSpacing',
   np_st_ts_shRn: 'namePlaceholder.styling.textStyle.textShadowRN',
-  np_st_ts_stRn: 'namePlaceholder.styling.textStyle.textStrokeRNShadows',
+  np_st_ts_st: 'namePlaceholder.styling.textStyle.textStroke',
   np_st_ts_ta: 'namePlaceholder.styling.textStyle.textAlignment',
 } as const;
 

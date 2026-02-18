@@ -50,19 +50,19 @@ This document verifies that the JSON export will render **exactly** the same vis
 
 ### 5. **Text Stroke (`np.st.ts.st`)**
 
-| Editor Value | JSON Export | RN Usage | Status |
-|-------------|-------------|----------|--------|
-| Width (px) | `w: 2` | Direct use | ✅ Correct |
-| Color | `col: "#000000"` | Direct use | ✅ Correct |
+| Editor Value | JSON Export      | RN Usage                               | Status |
+|-------------|------------------|-----------------------------------------|--------|
+| Width (px)  | `st.w: 2`        | Generate 24/36 stroke shadows from `w` | ✅ Correct |
+| Color       | `st.col: "#000"` | Use as stroke colour in generated ring | ✅ Correct |
 
-**⚠️ IMPORTANT:** React Native doesn't support `textStroke` directly. Use `stRn` (array of shadow objects) which simulates stroke using multiple text shadows.
+**⚠️ IMPORTANT:** React Native doesn't support `textStroke` directly. The RN app must expand `st` into a set of text-shadow layers using the same algorithm as the web tool (see TEMPLATE_JSON_SCHEMA.md).
 
 ## 🎯 React Native Implementation Guide
 
 ### Text Rendering (Critical)
 
 ```tsx
-// ✅ CORRECT: Use pre-computed shRn and stRn
+// ✅ CORRECT: Use pre-computed shRn and generate stroke from st
 <Text
   style={{
     color: json.np.st.ts.c,
@@ -72,8 +72,6 @@ This document verifies that the JSON export will render **exactly** the same vis
     textAlign: json.np.st.ts.ta,
     // Use shRn directly (already computed correctly)
     ...json.np.st.ts.shRn,
-    // For stroke: apply stRn array as multiple text shadows
-    // (React Native applies multiple shadows by wrapping in multiple Text components)
   }}
 >
   {userName}
@@ -82,27 +80,7 @@ This document verifies that the JSON export will render **exactly** the same vis
 
 ### Stroke Implementation (React Native Limitation)
 
-React Native doesn't support `textStroke` natively. The `stRn` array contains multiple shadow objects that simulate a stroke:
-
-```tsx
-// If stroke exists (stRn.length > 0), render multiple Text layers:
-{json.np.st.ts.stRn.map((shadow, i) => (
-  <Text
-    key={i}
-    style={{
-      ...baseTextStyle,
-      ...shadow, // Each shadow object has textShadowOffset, textShadowRadius, textShadowColor
-      position: 'absolute', // Overlay all strokes
-    }}
-  >
-    {userName}
-  </Text>
-))}
-// Then render the main text on top
-<Text style={{ ...baseTextStyle, ...json.np.st.ts.shRn }}>
-  {userName}
-</Text>
-```
+React Native doesn't support `textStroke` natively. The app must expand `st` into a set of text-shadow layers (24 or 36 items) using the same algorithm as the web tool, then render one `<Text>` per shadow behind the main text. See TEMPLATE_JSON_SCHEMA.md for the reference implementation.
 
 ## ⚠️ Potential Issues Found
 
@@ -114,7 +92,7 @@ React Native doesn't support `textStroke` natively. The `stRn` array contains mu
 
 ### Issue 2: Stroke Color Format
 
-- **Status:** ✅ VERIFIED - Stroke colors in `stRn` are hex strings (e.g., `"#000000"`)
+- **Status:** ✅ VERIFIED - Stroke colour in `st.col` is hex (e.g., `"#000000"`)
 - **Note:** React Native accepts hex colors directly
 
 ## 📋 Verification Checklist
@@ -125,14 +103,13 @@ React Native doesn't support `textStroke` natively. The `stRn` array contains mu
 - [x] Font sizes exported in design pixels
 - [x] Opacity exported as 0-1 in `sh.op`
 - [x] `shRn` pre-computed correctly with rgba colors
-- [x] `stRn` array contains valid shadow objects
 - [x] All numeric values match editor display
 
 ## 🚀 Backend Implementation Notes
 
-1. **Always use `shRn` and `stRn`** - these are pre-computed for React Native
+1. **Always use `shRn`** - this is pre-computed for React Native drop shadow
 2. **Don't reconstruct shadows from `sh`** - opacity scale differs (0-1 vs 0-100)
-3. **For stroke:** Use the `stRn` array to render multiple Text layers
+3. **For stroke:** Use `st` (width/color) and generate stroke shadows on RN side
 4. **Canvas dimensions:** Use `ar` (aspectRatio) to determine canvas size
 5. **Image placeholder:** Use `hb` flag to decide between cutout vs full image
 
@@ -140,6 +117,6 @@ React Native doesn't support `textStroke` natively. The `stRn` array contains mu
 
 **YES, the JSON export will render the exact same visual styles in React Native**, provided the backend:
 1. Uses `shRn` directly (not reconstructing from `sh`)
-2. Uses `stRn` array for stroke rendering
+2. Expands `st` into stroke shadows for rendering
 3. Converts percentage positions/sizes correctly
 4. Uses all other values directly as exported
