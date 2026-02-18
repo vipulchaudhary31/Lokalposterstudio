@@ -505,7 +505,7 @@ export function DraggablePlaceholder({
                 color: textColor,
                 fontWeight: fontWeight,
                 fontSize: fontSize * safeScale,
-                lineHeight: 1.1,
+                lineHeight: 1,
                 textShadow: scaledCombinedShadow,
                 textAlign: textAlignment,
                 maxWidth: '100%',
