@@ -38,8 +38,6 @@ export type CompactTemplateJSON = {
   np: {
     /** y position (% of canvas height, 0–100) */
     y: number;
-    /** height (% of canvas height, 0–100) */
-    h: number;
     /** styling configuration */
     st: {
       ts: {
@@ -102,7 +100,6 @@ export const TEMPLATE_KEY_MAP = {
   ip_sw: 'imagePlaceholder.strokeWidth',
   ip_sc: 'imagePlaceholder.strokeColor',
   np_y: 'namePlaceholder.y',
-  np_h: 'namePlaceholder.height',
   np_st_ts_c: 'namePlaceholder.styling.textStyle.color',
   np_st_ts_fs: 'namePlaceholder.styling.textStyle.fontSize',
   np_st_ts_fw: 'namePlaceholder.styling.textStyle.fontWeight',

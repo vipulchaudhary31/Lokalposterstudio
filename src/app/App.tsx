@@ -366,7 +366,6 @@ export default function App() {
       },
       np: {
         y: Math.round((nameHolder.y / canvasHeight) * 100),
-        h: Math.round((nameHolder.height / canvasHeight) * 100),
         st: {
           ts: {
             c: safeTextColor,

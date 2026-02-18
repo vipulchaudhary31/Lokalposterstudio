@@ -162,7 +162,6 @@ const borderWidth  = ip.sw * scale;  // 0 = no border
 ```json
 "np": {
   "y": 72,
-  "h": 9,
   "st": { "ts": { ... } }
 }
 ```
@@ -170,15 +169,15 @@ const borderWidth  = ip.sw * scale;  // 0 = no border
 | Key | Type           | Description                                          |
 |-----|----------------|------------------------------------------------------|
 | `y` | number (0–100) | Top edge of the name band as % of canvas height      |
-| `h` | number (0–100) | Height of the name band as % of canvas height        |
 
-**Width and X are not in JSON** — they are fixed:
-- Width = **80% of canvas width**
+**Width, height and X are not in JSON** — they are fixed in your app:
+- Width = **80% of canvas width** (or whatever your app chooses)
+- Height = a design-specific fraction of canvas height (e.g. ~9%)
 - X = centered → `(canvasWidth - bandWidth) / 2`
 
 ```jsx
 const bandWidth  = canvasWidth * 0.80;
-const bandHeight = (np.h / 100) * canvasHeight;
+const bandHeight = canvasHeight * 0.09;        // example fixed value
 const bandLeft   = (canvasWidth - bandWidth) / 2;
 const bandTop    = (np.y / 100) * canvasHeight;
 ```
@@ -451,15 +450,17 @@ function generateStrokeShadows(st, scale) {
       "ts": {
         "c": "#FFFFFF",
         "fs": 64,
-      "fw": 700,
-      "ls": 0,
-      "ta": "center",
-      "shRn": {
-        "textShadowOffset": { "width": 0, "height": 2 },
-        "textShadowRadius": 8,
-        "textShadowColor": "rgba(0,0,0,0.65)"
-      },
-      "st": { "w": 2, "col": "#000000" }
+        "fw": 700,
+        "ls": 0,
+        "ta": "center",
+        "sh": {
+          "ox": 0,
+          "oy": 2,
+          "bl": 8,
+          "col": "#000000",
+          "op": 0.65
+        },
+        "st": { "w": 2, "col": "#000000" }
       }
     }
   }
