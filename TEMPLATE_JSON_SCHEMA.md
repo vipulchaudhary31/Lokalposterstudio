@@ -268,8 +268,8 @@ Each item:
 | `textShadowRadius`  | number                                  | Always `0` for stroke. No scaling needed.        |
 | `textShadowColor`   | string (hex)                            | Stroke colour. Ready to use.                     |
 
-For strokes ≤ 3px: 24 shadow items (every 15° around the text).
-For strokes > 3px: 24 outer + 12 inner (36 items total) to fill gaps.
+For strokes ≤ 3px: **8** shadow items (every 45° around the text).
+For strokes > 3px: **16** items total — 8 outer + 8 inner at ~60% radius.
 
 ---
 
@@ -447,7 +447,7 @@ function canvasHeightFromAr(ar) {
 }
 ```
 
-> `stRn` normally contains 24 items (or 36 for thick strokes). Truncated here for readability.
+> `stRn` normally contains 8 items (or 16 for thick strokes). Truncated here for readability.
 
 ---
 

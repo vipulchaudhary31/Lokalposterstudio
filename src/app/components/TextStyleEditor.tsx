@@ -75,8 +75,8 @@ export function textStrokeToRNShadows(stroke: TextStroke) {
   if (stroke.width === 0) return [];
   const w = stroke.width;
   const c = stroke.color;
-  // 24-point circle for smooth outlines (every 15°)
-  const steps = 24;
+  // 8-direction stroke (every 45°) for RN — keeps JSON small and render cost low
+  const steps = 8;
   const shadows: { textShadowOffset: { width: number; height: number }; textShadowRadius: number; textShadowColor: string }[] = [];
   for (let i = 0; i < steps; i++) {
     const angle = (i / steps) * 2 * Math.PI;
@@ -86,11 +86,11 @@ export function textStrokeToRNShadows(stroke: TextStroke) {
       textShadowColor: c,
     });
   }
-  // For thick strokes (>3px) add inner ring at ~60% radius to fill gaps
+  // For thick strokes (>3px) add a second 8-direction ring at ~60% radius to fill gaps
   if (w > 3) {
     const inner = w * 0.6;
-    for (let i = 0; i < 12; i++) {
-      const angle = (i / 12) * 2 * Math.PI;
+    for (let i = 0; i < steps; i++) {
+      const angle = (i / steps) * 2 * Math.PI;
       shadows.push({
         textShadowOffset: { width: +(inner * Math.cos(angle)).toFixed(2), height: +(inner * Math.sin(angle)).toFixed(2) },
         textShadowRadius: 0,
@@ -106,19 +106,19 @@ export function buildCombinedTextShadow(shadow: TextShadow, stroke: TextStroke):
   if (stroke.width > 0) {
     const w = stroke.width;
     const c = stroke.color;
-    // 24-point circle for smooth outlines (every 15°) — eliminates jagged gaps visible with 8-direction approach
-    const steps = 24;
+    // 8-direction stroke (every 45°) — matches RN stroke approximation used in stRn
+    const steps = 8;
     for (let i = 0; i < steps; i++) {
       const angle = (i / steps) * 2 * Math.PI;
       const dx = +(w * Math.cos(angle)).toFixed(2);
       const dy = +(w * Math.sin(angle)).toFixed(2);
       parts.push(`${dx}px ${dy}px 0px ${c}`);
     }
-    // For thick strokes (>3px) add an inner ring at ~60% radius to fill any remaining gaps
+    // For thick strokes (>3px) add an inner 8-direction ring at ~60% radius to fill any remaining gaps
     if (w > 3) {
       const inner = w * 0.6;
-      for (let i = 0; i < 12; i++) {
-        const angle = (i / 12) * 2 * Math.PI;
+      for (let i = 0; i < steps; i++) {
+        const angle = (i / steps) * 2 * Math.PI;
         const dx = +(inner * Math.cos(angle)).toFixed(2);
         const dy = +(inner * Math.sin(angle)).toFixed(2);
         parts.push(`${dx}px ${dy}px 0px ${c}`);
