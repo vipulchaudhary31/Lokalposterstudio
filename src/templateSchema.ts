@@ -52,15 +52,19 @@ export type CompactTemplateJSON = {
         /** letterSpacing (design px) */
         ls: number;
         /**
-         * React Native text shadow (Android).
-         * null when shadow is disabled (opacity = 0).
+         * Compact text shadow config from the editor.
+         * Null when shadow is disabled (opacity = 0).
          * All px values are in design px (1080-wide canvas).
-         * Scale by (outputCanvasWidth / 1080) before applying.
+         * `op` is opacity in the 0–1 range.
+         * The RN app should expand this into `textShadowOffset`,
+         * `textShadowRadius` and `textShadowColor` at render time.
          */
-        shRn: {
-          textShadowOffset: { width: number; height: number };
-          textShadowRadius: number;
-          textShadowColor: string; // rgba(r,g,b,a)
+        sh: {
+          ox: number; // offsetX
+          oy: number; // offsetY
+          bl: number; // blur radius
+          col: string; // color (hex)
+          op: number; // opacity (0–1)
         } | null;
         /**
          * Compact stroke config.
@@ -103,7 +107,7 @@ export const TEMPLATE_KEY_MAP = {
   np_st_ts_fs: 'namePlaceholder.styling.textStyle.fontSize',
   np_st_ts_fw: 'namePlaceholder.styling.textStyle.fontWeight',
   np_st_ts_ls: 'namePlaceholder.styling.textStyle.letterSpacing',
-  np_st_ts_shRn: 'namePlaceholder.styling.textStyle.textShadowRN',
+  np_st_ts_sh: 'namePlaceholder.styling.textStyle.textShadow',
   np_st_ts_st: 'namePlaceholder.styling.textStyle.textStroke',
   np_st_ts_ta: 'namePlaceholder.styling.textStyle.textAlignment',
 } as const;

@@ -33,8 +33,8 @@ const scale = outputCanvasWidth / 1080;
 Fields that **must be scaled**:
 - `np.st.ts.fs` — font size
 - `np.st.ts.ls` — letter spacing
-- `np.st.ts.shRn.textShadowOffset` (width & height)
-- `np.st.ts.shRn.textShadowRadius`
+- `np.st.ts.sh.ox` / `np.st.ts.sh.oy` (shadow offset X/Y)
+- `np.st.ts.sh.bl` — shadow blur radius
 - `ip.sw` — photo border width
 - `ip.cr` — photo corner radius (square only)
 
@@ -46,7 +46,6 @@ Fields that are **ready to use as-is** (no scaling):
 - all hex / rgba color strings
 - `ip.sh`, `ip.hb`
 - `np.st.ts.c`, `np.st.ts.fw`, `np.st.ts.ta`
-- `np.st.ts.shRn` → `textShadowColor`
 
 ---
 
@@ -201,10 +200,12 @@ All text styling lives under `np.st.ts`.
       "fw": 700,
       "ls": 0,
       "ta": "center",
-      "shRn": {
-        "textShadowOffset": { "width": 0, "height": 2 },
-        "textShadowRadius": 8,
-        "textShadowColor": "rgba(0,0,0,0.65)"
+      "sh": {
+        "ox": 0,
+        "oy": 2,
+        "bl": 8,
+        "col": "#000000",
+        "op": 0.65
       },
       "st": { "w": 2, "col": "#000000" }
     }
@@ -219,28 +220,32 @@ All text styling lives under `np.st.ts`.
 | `fw`   | number                           | Font weight e.g. `300`, `400`, `500`, `600`, `700`, `800`, `900`   |
 | `ls`   | number (design px, can be 0)     | Letter spacing. **Scale before use.**                               |
 | `ta`   | `"left"` \| `"center"` \| `"right"` | Text alignment                                                  |
-| `shRn` | object \| `null`                 | Drop shadow. `null` = no shadow applied.                            |
+| `sh`   | object \| `null`                 | Compact drop shadow config. `null` = no shadow.                    |
 | `st`   | object                            | Compact stroke config (width & color).                              |
 
 ---
 
-### `shRn` — Drop shadow
+### `sh` — Drop shadow (compact)
 
 `null` when the designer set no shadow. When present:
 
 ```json
-"shRn": {
-  "textShadowOffset": { "width": 0, "height": 2 },
-  "textShadowRadius": 8,
-  "textShadowColor": "rgba(0,0,0,0.65)"
+"sh": {
+  "ox": 0,
+  "oy": 2,
+  "bl": 8,
+  "col": "#000000",
+  "op": 0.65
 }
 ```
 
-| Field               | Type                                    | Description                                    |
-|---------------------|-----------------------------------------|------------------------------------------------|
-| `textShadowOffset`  | `{ width: number, height: number }`     | X/Y offset in design px. **Scale before use.** |
-| `textShadowRadius`  | number                                  | Blur radius in design px. **Scale before use.**|
-| `textShadowColor`   | string (`rgba(r,g,b,a)`)               | Ready to use. Opacity is already baked in.     |
+| Field | Type   | Description                                      |
+|-------|--------|--------------------------------------------------|
+| `ox`  | number | Offset X in design px. **Scale before use.**    |
+| `oy`  | number | Offset Y in design px. **Scale before use.**    |
+| `bl`  | number | Blur radius in design px. **Scale before use.** |
+| `col` | string | Shadow colour as hex.                           |
+| `op`  | number | Opacity in 0–1.                                 |
 
 ---
 
@@ -288,13 +293,13 @@ function PosterTemplate({ json, outputWidth, userName, userPhotoUri }) {
   };
 
   // ── Shadow style ───────────────────────────────────────────────────
-  const shadowStyle = ts.shRn ? {
+  const shadowStyle = ts.sh ? {
     textShadowOffset: {
-      width:  ts.shRn.textShadowOffset.width  * scale,
-      height: ts.shRn.textShadowOffset.height * scale,
+      width:  ts.sh.ox * scale,
+      height: ts.sh.oy * scale,
     },
-    textShadowRadius: ts.shRn.textShadowRadius * scale,
-    textShadowColor:  ts.shRn.textShadowColor,
+    textShadowRadius: ts.sh.bl * scale,
+    textShadowColor:  rgbaFromHex(ts.sh.col, ts.sh.op),
   } : {};
 
   return (
@@ -371,6 +376,15 @@ function PosterTemplate({ json, outputWidth, userName, userPhotoUri }) {
 function canvasHeightFromAr(ar) {
   const [, h] = ar.split(':').map(Number);
   return h;
+}
+
+// Helper: convert hex + opacity (0–1) to rgba string
+function rgbaFromHex(hex, op) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.substring(0, 2), 16) || 0;
+  const g = parseInt(h.substring(2, 4), 16) || 0;
+  const b = parseInt(h.substring(4, 6), 16) || 0;
+  return `rgba(${r},${g},${b},${op.toFixed(2)})`;
 }
 
 // Helper: expand compact stroke (w,col) into 24/36 shadow layers

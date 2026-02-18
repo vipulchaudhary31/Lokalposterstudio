@@ -373,7 +373,18 @@ export default function App() {
             fs: textStyle.fontSize,
             fw: textStyle.fontWeight,
             ls: textStyle.letterSpacing,
-            shRn: textShadowToRN(safeShadow),
+            sh: (safeShadow.offsetX === 0
+              && safeShadow.offsetY === 0
+              && safeShadow.blur === 0
+              && safeShadow.opacity === 0)
+              ? null
+              : {
+                  ox: safeShadow.offsetX,
+                  oy: safeShadow.offsetY,
+                  bl: safeShadow.blur,
+                  col: safeShadow.color,
+                  op: safeShadow.opacity / 100,
+                },
             st: {
               w: safeStroke.width,
               col: safeStroke.color,
