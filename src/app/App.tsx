@@ -378,7 +378,7 @@ export default function App() {
               oy: safeShadow.offsetY,
               bl: safeShadow.blur,
               col: safeShadow.color,
-              op: safeShadow.opacity,
+              op: safeShadow.opacity / 100, // Convert from 0-100 to 0-1
             },
             shCss: textShadowToCSS(safeShadow),
             shRn: textShadowToRN(safeShadow),
