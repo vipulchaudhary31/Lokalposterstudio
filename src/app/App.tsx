@@ -9,7 +9,7 @@ import { flushSync } from 'react-dom';
 import { ImageUploader } from '@/app/components/ImageUploader';
 import { DesignCanvas } from '@/app/components/DesignCanvas';
 import { TagSelector } from '@/app/components/TagSelector';
-import { TextStyleEditor, type TextStyle, textShadowToCSS, textShadowToRN, buildCombinedTextShadow, textStrokeToRNShadows, normalizeHex } from '@/app/components/TextStyleEditor';
+import { TextStyleEditor, type TextStyle, textShadowToRN, textStrokeToRNShadows, normalizeHex } from '@/app/components/TextStyleEditor';
 import { ExportPanel } from '@/app/components/ExportPanel';
 import { Toaster } from '@/app/components/ui/sonner';
 import { toast } from 'sonner';
