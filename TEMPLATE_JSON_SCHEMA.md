@@ -1,139 +1,204 @@
-# Template JSON Schema
+# Template JSON Schema — React Native Rendering Guide
 
-This document describes the JSON format exported by Poster Studio.
-It is the **single source of truth** for the React Native (Android-first) renderer.
-
----
-
-## Design space contract
-
-All pixel values in this JSON are in **design px** — measured on a **1080-wide canvas**.
-Before applying any design-px value in your renderer:
-
-```
-scale = outputCanvasWidth / 1080
-```
-
-Apply `scale` to:
-- `ip.cr` (corner radius)
-- `ip.sw` (photo stroke width)
-- `np.st.ts.fs` (font size)
-- `np.st.ts.ls` (letter spacing)
-- `shRn.textShadowOffset`, `shRn.textShadowRadius`
-- every `textShadowOffset` inside `stRn`
-
-**Percentage keys** (`ip.x`, `ip.y`, `ip.d`, `np.y`, `np.h`) need no scaling —
-multiply by your canvas dimensions directly.
-
-**Font:** not in JSON. The web editor uses Noto Sans for preview only.
-Your RN app chooses the font independently.
+Exported by **Poster Studio** web tool.
+Target platform: **React Native, Android-first**.
 
 ---
 
-## 1. Top-level object
+## Canvas & design space
+
+The web editor works on a fixed **1080 × variable-height** canvas.
+All supported aspect ratios and their canvas heights:
+
+| `ar` value   | Canvas height (px) |
+|--------------|--------------------|
+| `1080:1152`  | 1152               |
+| `1080:1350`  | 1350               |
+| `1080:1484`  | 1484               |
+| `1080:1620`  | 1620               |
+
+Parse `ar` as `"width:height"` → `canvasWidth = 1080`, `canvasHeight` from table above.
+
+---
+
+## Scaling contract
+
+Some values in the JSON are in **design px** (measured on the 1080-wide canvas).
+Before applying them in your renderer, compute:
+
+```js
+const scale = outputCanvasWidth / 1080;
+```
+
+Fields that **must be scaled**:
+- `np.st.ts.fs` — font size
+- `np.st.ts.ls` — letter spacing
+- `np.st.ts.shRn.textShadowOffset` (width & height)
+- `np.st.ts.shRn.textShadowRadius`
+- every `textShadowOffset` inside `np.st.ts.stRn`
+- `ip.sw` — photo border width
+- `ip.cr` — photo corner radius (square only)
+
+Fields that are **already normalised** (percentages, 0–100) — just multiply:
+- `ip.x`, `ip.y`, `ip.d`
+- `np.y`, `np.h`
+
+Fields that are **ready to use as-is** (no scaling):
+- all hex / rgba color strings
+- `ip.sh`, `ip.hb`
+- `np.st.ts.c`, `np.st.ts.fw`, `np.st.ts.ta`
+- `np.st.ts.shRn` → `textShadowColor`
+- every `textShadowColor` inside `stRn`
+
+---
+
+## Font
+
+**Font is not in the JSON.** The web editor uses *Noto Sans* for preview only.
+Your app chooses the font independently.
+All numeric values (size, weight, spacing) are font-agnostic.
+
+---
+
+## Top-level structure
 
 ```json
 {
   "ar": "1080:1350",
   "t": true,
   "pc": ["Health", "Motivation"],
-  "lg": ["English"],
-  "bg": "data:image/jpeg;base64,...",
+  "lg": ["English", "Hindi"],
+  "bg": "data:image/jpeg;base64,/9j/4AAQ...",
   "mt": "image",
   "ip": { ... },
   "np": { ... }
 }
 ```
 
-| Key  | Type                   | Meaning                                                          |
-|------|------------------------|------------------------------------------------------------------|
-| `ar` | string                 | **aspectRatio** – e.g. `"1080:1350"`                            |
-| `t`  | boolean                | **isProfileTemplate** – `true` = Self, `false` = Wishes         |
-| `pc` | string[]               | **primaryCategories** – Self/Wishes tags                        |
-| `lg` | string[]               | **languageTags** – e.g. `["English","Hindi"]`                   |
-| `bg` | string \| null         | **backgroundImage** – data URL or `null`                        |
-| `mt` | `"image" \| "video"`   | **mediaType** – how to interpret `bg`                           |
-| `ip` | object                 | **imagePlaceholder** – photo circle/square position & style     |
-| `np` | object                 | **namePlaceholder** – name text band position & style           |
+| Key  | Type                   | Description                                                       |
+|------|------------------------|-------------------------------------------------------------------|
+| `ar` | string                 | Aspect ratio, format `"width:height"` e.g. `"1080:1350"`         |
+| `t`  | boolean                | Template type — `true` = Self/Profile, `false` = Wishes/Upload   |
+| `pc` | string[]               | Primary category tags selected by the designer                   |
+| `lg` | string[]               | Language tags e.g. `["English"]`                                  |
+| `bg` | string \| null         | Background — data URL (JPEG/PNG/video) or `null` if none uploaded |
+| `mt` | `"image"` \| `"video"` | How to interpret `bg` — render as `<Image>` or `<Video>`         |
+| `ip` | object                 | Photo placeholder config (position, size, shape, border)         |
+| `np` | object                 | Name text placeholder config (position, size, text style)        |
 
 ---
 
-## 2. `ip` – Image Placeholder
+## `ip` — Photo placeholder
 
 ```json
 "ip": {
-  "x": 50,
-  "y": 20,
+  "x": 36,
+  "y": 8,
   "d": 28,
   "sh": "circle",
-  "cr": 16,
-  "hb": true,
-  "sw": 4,
+  "hb": false,
+  "sw": 3,
   "sc": "#FFFFFF"
 }
 ```
 
-| Key  | Type                       | Meaning                                                          |
-|------|----------------------------|------------------------------------------------------------------|
-| `x`  | number (0–100)             | **left edge** of photo – % of canvas width                      |
-| `y`  | number (0–100)             | **top edge** of photo – % of canvas height                      |
-| `d`  | number (0–100)             | **diameter** – % of canvas width (`height = width`)             |
-| `sh` | `"circle" \| "square"`     | **shape** of the photo frame                                     |
-| `cr` | number (design px, optional) | **cornerRadius** – only present when `sh === "square"`         |
-| `hb` | boolean                    | **hasBackground** – `true` = full photo, `false` = cutout/transparent |
-| `sw` | number (design px)         | **strokeWidth** – border around photo, `0` = no border          |
-| `sc` | string (hex)               | **strokeColor** – e.g. `"#FFFFFF"`                              |
+```json
+"ip": {
+  "x": 36,
+  "y": 8,
+  "d": 28,
+  "sh": "square",
+  "cr": 20,
+  "hb": true,
+  "sw": 0,
+  "sc": "#FFFFFF"
+}
+```
 
-**Rendering (RN):**
+| Key  | Type                      | Description                                                                                   |
+|------|---------------------------|-----------------------------------------------------------------------------------------------|
+| `x`  | number (0–100)            | Left edge of the photo frame as % of canvas width                                            |
+| `y`  | number (0–100)            | Top edge of the photo frame as % of canvas height                                            |
+| `d`  | number (0–100)            | Diameter / size of the photo frame as % of canvas width. Height always equals width.         |
+| `sh` | `"circle"` \| `"square"`  | Shape of the photo frame                                                                      |
+| `cr` | number (design px)        | Corner radius — **only present when `sh === "square"`**. Scale before use. Absent for circle.|
+| `hb` | boolean                   | `true` = user has a background in their photo (show full). `false` = cutout/transparent photo.|
+| `sw` | number (design px)        | Border width around the photo frame. `0` = no border. Scale before use.                      |
+| `sc` | string (hex)              | Border colour e.g. `"#FFFFFF"`. Only relevant when `sw > 0`.                                 |
+
+**How to render (RN):**
+
+```jsx
+const photoSize   = (ip.d / 100) * canvasWidth;
+const photoLeft   = (ip.x / 100) * canvasWidth;
+const photoTop    = (ip.y / 100) * canvasHeight;
+const borderRadius = ip.sh === 'circle' ? photoSize / 2 : ip.cr * scale;
+const borderWidth  = ip.sw * scale;  // 0 = no border
+
+<View style={{
+  position: 'absolute',
+  left: photoLeft,
+  top: photoTop,
+  width: photoSize,
+  height: photoSize,
+  borderRadius,
+  borderWidth: borderWidth > 0 ? borderWidth : undefined,
+  borderColor: borderWidth > 0 ? ip.sc : undefined,
+  overflow: 'hidden',
+}}>
+  <Image
+    source={{ uri: userPhotoUri }}  // pass the actual user photo
+    style={{ width: '100%', height: '100%' }}
+    resizeMode="cover"
+  />
+</View>
 ```
-photoSize   = (d / 100) * canvasWidth             // always square
-photoLeft   = (x / 100) * canvasWidth
-photoTop    = (y / 100) * canvasHeight
-borderRadius = sh === "circle" ? photoSize / 2 : cr * scale
-borderWidth  = sw * scale    // 0 = no border
-borderColor  = sc
-```
+
+**`hb` flag usage:**
+- `hb: true` → user photo has a background. Show photo as-is (full rectangle clipped to circle/square).
+- `hb: false` → user photo is a cutout / transparent PNG. Render without extra background fill.
 
 ---
 
-## 3. `np` – Name Placeholder
+## `np` — Name placeholder
 
 ```json
 "np": {
-  "y": 55,
-  "h": 10,
+  "y": 72,
+  "h": 9,
   "st": { "ts": { ... } }
 }
 ```
 
-| Key | Type           | Meaning                                              |
+| Key | Type           | Description                                          |
 |-----|----------------|------------------------------------------------------|
-| `y` | number (0–100) | **top edge** of name band – % of canvas height       |
-| `h` | number (0–100) | **height** of name band – % of canvas height         |
+| `y` | number (0–100) | Top edge of the name band as % of canvas height      |
+| `h` | number (0–100) | Height of the name band as % of canvas height        |
 
-**Width and X position are not in JSON:**
-- Width = `80%` of canvas width (hardcoded)
-- X = centered: `(canvasWidth - bandWidth) / 2`
+**Width and X are not in JSON** — they are fixed:
+- Width = **80% of canvas width**
+- X = centered → `(canvasWidth - bandWidth) / 2`
 
-**Rendering (RN):**
-```
-bandWidth  = canvasWidth * 0.80
-bandHeight = (h / 100) * canvasHeight
-bandLeft   = (canvasWidth - bandWidth) / 2
-bandTop    = (y / 100) * canvasHeight
+```jsx
+const bandWidth  = canvasWidth * 0.80;
+const bandHeight = (np.h / 100) * canvasHeight;
+const bandLeft   = (canvasWidth - bandWidth) / 2;
+const bandTop    = (np.y / 100) * canvasHeight;
 ```
 
 ---
 
-## 4. `np.st.ts` – Text Style
+## `np.st.ts` — Text style
+
+All text styling lives under `np.st.ts`.
 
 ```json
 "np": {
-  "y": 55,
-  "h": 10,
+  "y": 72,
+  "h": 9,
   "st": {
     "ts": {
-      "c": "#FFFFFF",
+      "c":  "#FFFFFF",
       "fs": 64,
       "fw": 700,
       "ls": 0,
@@ -143,30 +208,27 @@ bandTop    = (y / 100) * canvasHeight
         "textShadowRadius": 8,
         "textShadowColor": "rgba(0,0,0,0.65)"
       },
-      "stRn": [
-        { "textShadowOffset": { "width": 2.0, "height": 0.0 }, "textShadowRadius": 0, "textShadowColor": "#000000" },
-        { "textShadowOffset": { "width": 1.73, "height": 1.0 }, "textShadowRadius": 0, "textShadowColor": "#000000" }
-      ]
+      "stRn": []
     }
   }
 }
 ```
 
-| Key    | Type                            | Meaning                                              |
-|--------|---------------------------------|------------------------------------------------------|
-| `c`    | string (hex)                    | **text color**                                       |
-| `fs`   | number (design px)              | **fontSize** – scale before use                      |
-| `fw`   | number                          | **fontWeight** – e.g. `400`, `700`                   |
-| `ls`   | number (design px)              | **letterSpacing** – scale before use                 |
-| `ta`   | `"left" \| "center" \| "right"` | **textAlign**                                        |
-| `shRn` | object \| `null`                | **text shadow** (see below). `null` = no shadow.     |
-| `stRn` | array (may be empty)            | **text stroke** as shadow list (see below)           |
+| Key    | Type                             | Description                                                         |
+|--------|----------------------------------|---------------------------------------------------------------------|
+| `c`    | string (hex)                     | Text colour e.g. `"#FFFFFF"`                                        |
+| `fs`   | number (design px)               | Font size. **Scale before use.**                                    |
+| `fw`   | number                           | Font weight e.g. `300`, `400`, `500`, `600`, `700`, `800`, `900`   |
+| `ls`   | number (design px, can be 0)     | Letter spacing. **Scale before use.**                               |
+| `ta`   | `"left"` \| `"center"` \| `"right"` | Text alignment                                                  |
+| `shRn` | object \| `null`                 | Drop shadow. `null` = no shadow applied.                            |
+| `stRn` | array (may be empty `[]`)        | Text stroke as shadow layers. Empty = no stroke.                    |
 
 ---
 
-### 4.1 `shRn` – Text Shadow
+### `shRn` — Drop shadow
 
-`null` when shadow is disabled. Otherwise:
+`null` when the designer set no shadow. When present:
 
 ```json
 "shRn": {
@@ -176,67 +238,171 @@ bandTop    = (y / 100) * canvasHeight
 }
 ```
 
-| Field               | Type                              | Notes                          |
-|---------------------|-----------------------------------|--------------------------------|
-| `textShadowOffset`  | `{ width: number, height: number }` | design px — **scale before use** |
-| `textShadowRadius`  | number                            | blur radius, design px — **scale before use** |
-| `textShadowColor`   | string (`rgba(...)`)              | ready to use directly          |
-
-**Rendering (RN Android):**
-```jsx
-const s = scale; // outputCanvasWidth / 1080
-const shadowStyle = shRn ? {
-  textShadowOffset: { width: shRn.textShadowOffset.width * s, height: shRn.textShadowOffset.height * s },
-  textShadowRadius: shRn.textShadowRadius * s,
-  textShadowColor: shRn.textShadowColor,
-} : {};
-
-<Text style={{ ...textStyle, ...shadowStyle }}>{name}</Text>
-```
+| Field               | Type                                    | Description                                    |
+|---------------------|-----------------------------------------|------------------------------------------------|
+| `textShadowOffset`  | `{ width: number, height: number }`     | X/Y offset in design px. **Scale before use.** |
+| `textShadowRadius`  | number                                  | Blur radius in design px. **Scale before use.**|
+| `textShadowColor`   | string (`rgba(r,g,b,a)`)               | Ready to use. Opacity is already baked in.     |
 
 ---
 
-### 4.2 `stRn` – Text Stroke (Android)
+### `stRn` — Text stroke
 
-Empty array when stroke is disabled.
+React Native has no native text stroke. Stroke is simulated by rendering
+one `<Text>` copy per shadow in the `stRn` array, all stacked behind the
+main text. Empty array = no stroke.
 
-React Native does not support `textStroke` natively. Stroke is simulated by
-rendering multiple `<Text>` layers (one per shadow object in `stRn`) behind
-the main text, each with a single `textShadow*` offset.
+Each item:
 
-**Rendering (RN Android):**
+```json
+{
+  "textShadowOffset": { "width": 2.0, "height": 0.0 },
+  "textShadowRadius": 0,
+  "textShadowColor": "#000000"
+}
+```
+
+| Field               | Type                                    | Description                                      |
+|---------------------|-----------------------------------------|--------------------------------------------------|
+| `textShadowOffset`  | `{ width: number, height: number }`     | Offset forming the stroke outline. **Scale.**    |
+| `textShadowRadius`  | number                                  | Always `0` for stroke. No scaling needed.        |
+| `textShadowColor`   | string (hex)                            | Stroke colour. Ready to use.                     |
+
+For strokes ≤ 3px: 24 shadow items (every 15° around the text).
+For strokes > 3px: 24 outer + 12 inner (36 items total) to fill gaps.
+
+---
+
+## Complete rendering code (RN Android)
 
 ```jsx
-const s = scale; // outputCanvasWidth / 1080
+import { View, Text, Image, StyleSheet } from 'react-native';
 
-// Render stroke layers first (behind)
-{stRn.map((shadow, i) => (
-  <Text
-    key={i}
-    style={[
-      baseTextStyle,
-      {
+function PosterTemplate({ json, outputWidth, userName, userPhotoUri }) {
+  const outputHeight = outputWidth * (canvasHeightFromAr(json.ar) / 1080);
+  const scale = outputWidth / 1080;
+  const canvasWidth = outputWidth;
+  const canvasHeight = outputHeight;
+
+  const { ip, np } = json;
+  const ts = np.st.ts;
+
+  // ── Photo ──────────────────────────────────────────────────────────
+  const photoSize   = (ip.d / 100) * canvasWidth;
+  const photoLeft   = (ip.x / 100) * canvasWidth;
+  const photoTop    = (ip.y / 100) * canvasHeight;
+  const borderRadius = ip.sh === 'circle' ? photoSize / 2 : ip.cr * scale;
+  const borderWidth  = ip.sw * scale;
+
+  // ── Name band ──────────────────────────────────────────────────────
+  const bandWidth  = canvasWidth * 0.80;
+  const bandHeight = (np.h / 100) * canvasHeight;
+  const bandLeft   = (canvasWidth - bandWidth) / 2;
+  const bandTop    = (np.y / 100) * canvasHeight;
+
+  // ── Text base style ────────────────────────────────────────────────
+  const baseTextStyle = {
+    color:         ts.c,
+    fontSize:      ts.fs * scale,
+    fontWeight:    String(ts.fw),
+    letterSpacing: ts.ls * scale,
+    textAlign:     ts.ta,
+    width:         bandWidth,
+  };
+
+  // ── Shadow style ───────────────────────────────────────────────────
+  const shadowStyle = ts.shRn ? {
+    textShadowOffset: {
+      width:  ts.shRn.textShadowOffset.width  * scale,
+      height: ts.shRn.textShadowOffset.height * scale,
+    },
+    textShadowRadius: ts.shRn.textShadowRadius * scale,
+    textShadowColor:  ts.shRn.textShadowColor,
+  } : {};
+
+  return (
+    <View style={{ width: canvasWidth, height: canvasHeight }}>
+
+      {/* Background */}
+      {json.bg && (
+        json.mt === 'image'
+          ? <Image source={{ uri: json.bg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+          : <Video source={{ uri: json.bg }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+      )}
+
+      {/* Photo placeholder */}
+      <View style={{
         position: 'absolute',
-        textShadowOffset: {
-          width: shadow.textShadowOffset.width * s,
-          height: shadow.textShadowOffset.height * s,
-        },
-        textShadowRadius: 0,
-        textShadowColor: shadow.textShadowColor,
-      },
-    ]}
-  >
-    {name}
-  </Text>
-))}
+        left: photoLeft, top: photoTop,
+        width: photoSize, height: photoSize,
+        borderRadius,
+        borderWidth: borderWidth > 0 ? borderWidth : 0,
+        borderColor: borderWidth > 0 ? ip.sc : 'transparent',
+        overflow: 'hidden',
+      }}>
+        {userPhotoUri && (
+          <Image
+            source={{ uri: userPhotoUri }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode="cover"
+          />
+        )}
+      </View>
 
-// Main text layer on top (with optional drop shadow)
-<Text style={[baseTextStyle, shadowStyle]}>{name}</Text>
+      {/* Name band */}
+      <View style={{
+        position: 'absolute',
+        left: bandLeft, top: bandTop,
+        width: bandWidth, height: bandHeight,
+        alignItems: ts.ta === 'left' ? 'flex-start' : ts.ta === 'right' ? 'flex-end' : 'center',
+        justifyContent: 'center',
+      }}>
+
+        {/* Stroke layers — render BEFORE main text (behind) */}
+        {ts.stRn.map((s, i) => (
+          <Text
+            key={i}
+            style={[
+              baseTextStyle,
+              StyleSheet.absoluteFill,
+              {
+                textShadowOffset: {
+                  width:  s.textShadowOffset.width  * scale,
+                  height: s.textShadowOffset.height * scale,
+                },
+                textShadowRadius: 0,
+                textShadowColor: s.textShadowColor,
+              },
+            ]}
+            numberOfLines={1}
+          >
+            {userName}
+          </Text>
+        ))}
+
+        {/* Main text — on top, with optional drop shadow */}
+        <Text
+          style={[baseTextStyle, shadowStyle]}
+          numberOfLines={1}
+        >
+          {userName}
+        </Text>
+      </View>
+
+    </View>
+  );
+}
+
+// Helper: get canvas height from ar string
+function canvasHeightFromAr(ar) {
+  const [, h] = ar.split(':').map(Number);
+  return h;
+}
 ```
 
 ---
 
-## 5. Full example JSON
+## Full example JSON
 
 ```json
 {
@@ -247,8 +413,8 @@ const s = scale; // outputCanvasWidth / 1080
   "bg": "data:image/jpeg;base64,...",
   "mt": "image",
   "ip": {
-    "x": 50,
-    "y": 10,
+    "x": 36,
+    "y": 8,
     "d": 28,
     "sh": "circle",
     "hb": false,
@@ -270,19 +436,25 @@ const s = scale; // outputCanvasWidth / 1080
           "textShadowRadius": 8,
           "textShadowColor": "rgba(0,0,0,0.65)"
         },
-        "stRn": []
+        "stRn": [
+          { "textShadowOffset": { "width": 2.5,  "height": 0.0  }, "textShadowRadius": 0, "textShadowColor": "#000000" },
+          { "textShadowOffset": { "width": 2.29, "height": 1.08 }, "textShadowRadius": 0, "textShadowColor": "#000000" },
+          { "textShadowOffset": { "width": 1.77, "height": 1.77 }, "textShadowRadius": 0, "textShadowColor": "#000000" }
+        ]
       }
     }
   }
 }
 ```
 
+> `stRn` normally contains 24 items (or 36 for thick strokes). Truncated here for readability.
+
 ---
 
-## 6. TypeScript type
+## TypeScript type
 
 ```ts
 import type { CompactTemplateJSON } from '@/templateSchema';
 ```
 
-See `src/templateSchema.ts` for the exact typed definition.
+See `src/templateSchema.ts` for the full typed definition and key → meaning map.
