@@ -396,7 +396,7 @@ export default function App() {
     };
 
     console.log('Export Payload (compact):', payload);
-    const jsonString = JSON.stringify(payload, null, 2);
+    const jsonString = JSON.stringify(payload); // minified JSON (no whitespace)
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
