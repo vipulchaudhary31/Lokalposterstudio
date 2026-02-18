@@ -491,7 +491,7 @@ export function DraggablePlaceholder({
           <div
             className="relative w-full h-full flex items-center"
             style={{
-              padding: `0 ${scaledPad + 6}px`,
+              padding: `${4 * safeScale}px ${scaledPad + 6}px`,
               justifyContent:
                 textAlignment === 'left' ? 'flex-start'
                 : textAlignment === 'right' ? 'flex-end'
