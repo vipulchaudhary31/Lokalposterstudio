@@ -373,21 +373,8 @@ export default function App() {
             fs: textStyle.fontSize,
             fw: textStyle.fontWeight,
             ls: textStyle.letterSpacing,
-            sh: {
-              ox: safeShadow.offsetX,
-              oy: safeShadow.offsetY,
-              bl: safeShadow.blur,
-              col: safeShadow.color,
-              op: safeShadow.opacity / 100, // Convert from 0-100 to 0-1
-            },
-            shCss: textShadowToCSS(safeShadow),
             shRn: textShadowToRN(safeShadow),
-            st: {
-              w: safeStroke.width,
-              col: safeStroke.color,
-            },
             stRn: textStrokeToRNShadows(safeStroke),
-            shComboCss: buildCombinedTextShadow(safeShadow, safeStroke),
             ta: textStyle.textAlignment,
           },
         },

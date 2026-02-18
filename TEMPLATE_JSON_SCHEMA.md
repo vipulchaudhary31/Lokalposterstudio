@@ -86,12 +86,12 @@ Usage notes for rendering:
       "fs": 64,
       "fw": 500,
       "ls": 0,
-      "sh": { "ox": 0, "oy": 0, "bl": 0, "col": "#000000", "op": 0.0 },
-      "shCss": "0px 0px 0px rgba(0,0,0,0)",
-      "shRn": {},
-      "st": { "w": 0, "col": "#000000" },
+      "shRn": {
+        "textShadowOffset": { "width": 0, "height": 2 },
+        "textShadowRadius": 8,
+        "textShadowColor": "rgba(0,0,0,0.65)"
+      },
       "stRn": [],
-      "shComboCss": "0px 0px 0px rgba(0,0,0,0)",
       "ta": "center"
     }
   }
@@ -131,38 +131,44 @@ Rendering suggestion:
 | `fs`   | number  | **fontSize** – design px                        |
 | `fw`   | number  | **fontWeight** – numeric (e.g. 300, 400, 500)   |
 | `ls`   | number  | **letterSpacing** – design px                   |
-| `sh`   | object  | **textShadow** config (see below)               |
-| `shCss` | string | **CSS text-shadow** string (shadow only)        |
-| `shRn` | any     | **React Native** shadow object                  |
-| `st`   | object  | **textStroke** config (see below)               |
-| `stRn` | any     | **React Native** stroke/shadow array            |
-| `shComboCss` | string | CSS text-shadow string with stroke baked in|
+| `shRn` | object  | **React Native** shadow object (see below)      |
+| `stRn` | array   | **React Native** stroke/shadow array (see below)|
 | `ta`   | `"left" \| "center" \| "right"` | **textAlignment**       |
 
-### 4.2 `sh` – Text Shadow
+### 4.2 `shRn` – React Native Text Shadow
 
 ```json
-"sh": { "ox": 0, "oy": 0, "bl": 8, "col": "#000000", "op": 0.4 }
+"shRn": {
+  "textShadowOffset": { "width": 0, "height": 2 },
+  "textShadowRadius": 8,
+  "textShadowColor": "rgba(0,0,0,0.65)"
+}
 ```
 
 | Key  | Meaning          |
 |------|------------------|
-| `ox` | offsetX (px)     |
-| `oy` | offsetY (px)     |
-| `bl` | blur (px)        |
-| `col`| color (hex)      |
-| `op` | opacity (0–1)    |
+| `textShadowOffset` | `{ width: number, height: number }` – offset in px |
+| `textShadowRadius` | number – blur radius in px |
+| `textShadowColor` | string – rgba color string |
 
-### 4.3 `st` – Text Stroke
+### 4.3 `stRn` – React Native Text Stroke
+
+React Native doesn't support `textStroke` natively. The `stRn` array simulates stroke using multiple text shadows:
 
 ```json
-"st": { "w": 2, "col": "#000000" }
+"stRn": [
+  { "textShadowOffset": { "width": 2, "height": 0 }, "textShadowRadius": 0, "textShadowColor": "#000000" },
+  { "textShadowOffset": { "width": -2, "height": 0 }, "textShadowRadius": 0, "textShadowColor": "#000000" },
+  // ... 24 shadow objects forming a circle around the text
+]
 ```
 
 | Key  | Meaning          |
 |------|------------------|
-| `w`  | width (px)       |
-| `col`| color (hex)      |
+| Array items | Each object is a shadow that forms part of the stroke outline |
+| `textShadowOffset` | Position offset for this shadow |
+| `textShadowRadius` | Always `0` for stroke simulation |
+| `textShadowColor` | Stroke color (hex string) |
 
 ---
 

@@ -51,27 +51,10 @@ export type CompactTemplateJSON = {
         fw: number;
         /** letterSpacing (design px) */
         ls: number;
-        /** text shadow config */
-        sh: {
-          ox: number; // offsetX
-          oy: number; // offsetY
-          bl: number; // blur
-          col: string; // color
-          op: number; // opacity (0–1)
-        };
-        /** CSS text-shadow string (shadow only) */
-        shCss: string;
         /** React Native compatible shadow object */
         shRn: unknown;
-        /** stroke config */
-        st: {
-          w: number; // width
-          col: string; // color
-        };
         /** React Native stroke/shadow array */
         stRn: unknown;
-        /** CSS text-shadow string with stroke baked in */
-        shComboCss: string;
         /** textAlignment: "left" | "center" | "right" */
         ta: 'left' | 'center' | 'right';
       };
@@ -103,12 +86,8 @@ export const TEMPLATE_KEY_MAP = {
   np_st_ts_fs: 'namePlaceholder.styling.textStyle.fontSize',
   np_st_ts_fw: 'namePlaceholder.styling.textStyle.fontWeight',
   np_st_ts_ls: 'namePlaceholder.styling.textStyle.letterSpacing',
-  np_st_ts_sh: 'namePlaceholder.styling.textStyle.textShadow',
-  np_st_ts_shCss: 'namePlaceholder.styling.textStyle.textShadowCSS',
   np_st_ts_shRn: 'namePlaceholder.styling.textStyle.textShadowRN',
-  np_st_ts_st: 'namePlaceholder.styling.textStyle.textStroke',
   np_st_ts_stRn: 'namePlaceholder.styling.textStyle.textStrokeRNShadows',
-  np_st_ts_shComboCss: 'namePlaceholder.styling.textStyle.combinedTextShadowCSS',
   np_st_ts_ta: 'namePlaceholder.styling.textStyle.textAlignment',
 } as const;
 
