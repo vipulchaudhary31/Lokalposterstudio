@@ -472,7 +472,7 @@ export function DesignCanvas({
                   color: textColor, fontWeight, fontSize: fontSize * scale, lineHeight: 1,
                   textShadow: scaledCombinedShadow, textAlign: textAlignment,
                   maxWidth: '100%', whiteSpace: 'nowrap', display: 'block',
-                  overflow: 'hidden', textOverflow: 'ellipsis',
+                  overflow: 'visible',
                   letterSpacing: `${letterSpacing * scale}px`,
                   WebkitFontSmoothing: 'antialiased' as any,
                   MozOsxFontSmoothing: 'grayscale' as any,

@@ -1,4 +1,4 @@
-# Template JSON Schema — React Native Rendering Guide
+## Template JSON Schema — Frontend React Native Rendering Guide
 
 Exported by **Poster Studio** web tool.
 Target platform: **React Native, Android-first**.

@@ -303,7 +303,7 @@ export default function App() {
     x: (CANVAS_WIDTH - Math.round(CANVAS_WIDTH * 0.8)) / 2,
     y: 550,
     width: Math.round(CANVAS_WIDTH * 0.8),
-    height: 120,
+    height: 100,
   });
 
   useEffect(() => {
