@@ -171,13 +171,16 @@ const borderWidth  = ip.sw * scale;  // 0 = no border
 | `y` | number (0–100) | Top edge of the name band as % of canvas height      |
 
 **Width, height and X are not in JSON** — they are fixed in your app:
-- Width = **80% of canvas width** (or whatever your app chooses)
-- Height = a design-specific fraction of canvas height (e.g. ~9%)
+- Width = **80% of canvas width**
+- Height = **100 design px** on the 1080-wide canvas
 - X = centered → `(canvasWidth - bandWidth) / 2`
 
+At render time on device:
+
 ```jsx
+const scale      = outputCanvasWidth / 1080;
 const bandWidth  = canvasWidth * 0.80;
-const bandHeight = canvasHeight * 0.09;        // example fixed value
+const bandHeight = 100 * scale;               // 100 design px on 1080-wide canvas
 const bandLeft   = (canvasWidth - bandWidth) / 2;
 const bandTop    = (np.y / 100) * canvasHeight;
 ```
