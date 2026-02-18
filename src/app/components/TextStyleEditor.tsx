@@ -57,7 +57,13 @@ export function textShadowToCSS(shadow: TextShadow): string {
   return `${shadow.offsetX}px ${shadow.offsetY}px ${shadow.blur}px ${hexToRgba(shadow.color, shadow.opacity)}`;
 }
 
-export function textShadowToRN(shadow: TextShadow) {
+export function textShadowToRN(shadow: TextShadow): {
+  textShadowOffset: { width: number; height: number };
+  textShadowRadius: number;
+  textShadowColor: string;
+} | null {
+  // Return null when shadow is effectively off — RN renderer can skip shadow props entirely
+  if (shadow.opacity === 0) return null;
   return {
     textShadowOffset: { width: shadow.offsetX, height: shadow.offsetY },
     textShadowRadius: shadow.blur,

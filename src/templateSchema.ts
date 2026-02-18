@@ -51,10 +51,30 @@ export type CompactTemplateJSON = {
         fw: number;
         /** letterSpacing (design px) */
         ls: number;
-        /** React Native compatible shadow object */
-        shRn: unknown;
-        /** React Native stroke/shadow array */
-        stRn: unknown;
+        /**
+         * React Native text shadow (Android).
+         * null when shadow is disabled (opacity = 0).
+         * All px values are in design px (1080-wide canvas).
+         * Scale by (outputCanvasWidth / 1080) before applying.
+         */
+        shRn: {
+          textShadowOffset: { width: number; height: number };
+          textShadowRadius: number;
+          textShadowColor: string; // rgba(r,g,b,a)
+        } | null;
+        /**
+         * React Native stroke simulation (Android).
+         * Empty array when stroke is disabled.
+         * Each item is a textShadow* object. Must be rendered as stacked
+         * <Text> layers (one per shadow) behind the main text layer.
+         * All offset px values are in design px (1080-wide canvas).
+         * Scale by (outputCanvasWidth / 1080) before applying.
+         */
+        stRn: {
+          textShadowOffset: { width: number; height: number };
+          textShadowRadius: number;
+          textShadowColor: string; // hex
+        }[];
         /** textAlignment: "left" | "center" | "right" */
         ta: 'left' | 'center' | 'right';
       };
