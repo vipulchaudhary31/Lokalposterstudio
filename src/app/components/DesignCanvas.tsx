@@ -463,7 +463,7 @@ export function DesignCanvas({
               left: nameHolder.x * scale, top: nameHolder.y * scale,
               width: nameHolder.width * scale, height: nameHolder.height * scale,
             }}>
-              <div className="relative w-full h-full flex items-center overflow-hidden" style={{
+              <div className="relative w-full h-full flex items-center" style={{
                 padding: `0 ${scaledPad + 6}px`,
                 justifyContent: textAlignment === 'left' ? 'flex-start' : textAlignment === 'right' ? 'flex-end' : 'center',
               }}>

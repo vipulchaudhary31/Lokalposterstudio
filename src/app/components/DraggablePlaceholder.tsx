@@ -489,7 +489,7 @@ export function DraggablePlaceholder({
         >
           {/* Text Content */}
           <div
-            className="relative w-full h-full flex items-center overflow-hidden"
+            className="relative w-full h-full flex items-center"
             style={{
               padding: `0 ${scaledPad + 6}px`,
               justifyContent:
