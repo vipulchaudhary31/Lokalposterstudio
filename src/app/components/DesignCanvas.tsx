@@ -469,7 +469,7 @@ export function DesignCanvas({
               }}>
                 <span className="relative z-10" style={{
                   fontFamily: "'Noto Sans', sans-serif",
-                  color: textColor, fontWeight, fontSize: fontSize * scale, lineHeight: 1.25,
+                  color: textColor, fontWeight, fontSize: fontSize * scale, lineHeight: 1.1,
                   textShadow: scaledCombinedShadow, textAlign: textAlignment,
                   maxWidth: '100%', whiteSpace: 'nowrap', display: 'block',
                   overflow: 'hidden', textOverflow: 'ellipsis',
